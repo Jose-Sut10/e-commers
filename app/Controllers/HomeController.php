@@ -3,12 +3,18 @@
 namespace App\Controllers;
 
 use Core\Controller;
-use Core\View;
+use App\Models\User;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        View::render('home/index');
+        $user = new User();
+
+        echo "<pre>";
+
+        print_r($user->all());
+
+        echo "</pre>";
     }
 }
