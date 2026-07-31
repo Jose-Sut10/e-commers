@@ -1,0 +1,18 @@
+:root{
+    --primary:#2563eb;
+    --primary-hover:#1d4ed8;
+    --secondary:#64748b;
+    --success:#16a34a;
+    --warning:#f59e0b;
+    --danger:#cb0000;
+    --background:#f8fafc;
+    --sidebar:#ffffff;
+    --card:#ffffff;
+    --border:#e2e8f0;
+    --text:#1e293b;
+    --text-light:#64748b;
+    --radius:12px;
+    --shadow:0 10px 20px rgba(0,0,0,.08);
+    --transition:.25s;
+    --sidebar-width:260px;
+}

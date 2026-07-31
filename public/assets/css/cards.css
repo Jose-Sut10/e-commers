@@ -1,0 +1,21 @@
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:var(--card);
+    padding:25px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+}
+
+.card h3{
+    color:var(--text-light);
+    margin-bottom:10px;
+}
+
+.card h1{
+    font-size:2rem;
+}
