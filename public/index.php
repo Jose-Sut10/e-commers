@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Core\App;
+use Core\Kernel;
 
-App::run();
+$kernel = new Kernel();
+
+$kernel->handle();
