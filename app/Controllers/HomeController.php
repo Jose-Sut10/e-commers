@@ -9,17 +9,13 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $user = new User();
+        $usuarios = User::query()
+            ->where('estado', 1)
+            ->orderBy('nombre')
+            ->get();
 
         echo "<pre>";
-
-        print_r(
-            $user->where('estado',1)
-                 ->orderBy('nombre')
-                 ->limit(10)
-                 ->get()
-        );
-
+        print_r($usuarios);
         echo "</pre>";
     }
 }

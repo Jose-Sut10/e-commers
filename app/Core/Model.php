@@ -3,6 +3,7 @@
 namespace Core;
 
 use PDO;
+use BadMethodCallException;
 
 abstract class Model
 {
@@ -21,6 +22,17 @@ abstract class Model
             $this->db,
             $this->table
         );
+    }
+
+    public static function __callStatic($method, $arguments)
+    {
+        $instance = new static();
+
+        if (!method_exists($instance, $method)) {
+            return $instance->query()->$method(...$arguments);
+        }
+
+        return $instance->$method(...$arguments);
     }
 
     public function all(): array
