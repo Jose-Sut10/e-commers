@@ -7,13 +7,11 @@ use Core\View;
 
 class HomeController extends Controller
 {
-    public function index()
-    {
-        View::render(
-            'dashboard/index',
-            [
-                'title' => 'Dashboard'
-            ]
-        );
+    public function index(){
+        dump(config('app'));
+
+        view('dashboard/index', [
+            'title' => 'Dashboard'
+        ]);
     }
 }
