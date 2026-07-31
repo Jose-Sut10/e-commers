@@ -1,0 +1,1 @@
+<script src="/EcommerceCMS/public/assets/js/app.js"></script>
