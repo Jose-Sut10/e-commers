@@ -13,7 +13,12 @@ class HomeController extends Controller
 
         echo "<pre>";
 
-        print_r($user->all());
+        print_r(
+            $user->where('estado',1)
+                 ->orderBy('nombre')
+                 ->limit(10)
+                 ->get()
+        );
 
         echo "</pre>";
     }
