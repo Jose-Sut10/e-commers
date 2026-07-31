@@ -1,26 +1,30 @@
 <aside class="sidebar">
 
-    <h2>EcommerceCMS</h2>
+    <div class="logo">
+
+        <h2>EcommerceCMS</h2>
+
+    </div>
 
     <nav>
 
-        <a href="#">🏠 Dashboard</a>
+        <?php
 
-        <a href="#">🏢 Empresa</a>
+        $menu = \Core\Config::get('app.menu');
 
-        <a href="#">📦 Productos</a>
+        foreach ($menu as $item):
 
-        <a href="#">📂 Categorías</a>
+        ?>
 
-        <a href="#">🏷 Marcas</a>
+            <a href="<?= $item['route']; ?>">
 
-        <a href="#">👥 Clientes</a>
+                <i class="<?= $item['icon']; ?>"></i>
 
-        <a href="#">🛒 Pedidos</a>
+                <span><?= $item['title']; ?></span>
 
-        <a href="#">📊 Reportes</a>
+            </a>
 
-        <a href="#">⚙ Configuración</a>
+        <?php endforeach; ?>
 
     </nav>
 

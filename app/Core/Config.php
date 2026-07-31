@@ -13,7 +13,20 @@ class Config
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        return self::$config[$key] ?? $default;
+        $keys = explode('.', $key);
+
+        $config = self::$config;
+
+        foreach ($keys as $segment) {
+
+            if (!isset($config[$segment])) {
+                return $default;
+            }
+
+            $config = $config[$segment];
+        }
+
+        return $config;
     }
 
     public static function all(): array
