@@ -11,9 +11,17 @@ class Request
 
     public function uri(): string
     {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        return rtrim($uri, '/') ?: '/';
+    $config = Config::get('app');
+
+    $basePath = $config['base_path'] ?? '';
+
+    if ($basePath && str_starts_with($uri, $basePath)) {
+        $uri = substr($uri, strlen($basePath));
+    }
+
+    return $uri ?: '/';
     }
 
     public function input(string $key, mixed $default = null): mixed
