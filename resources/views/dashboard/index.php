@@ -1,25 +1,31 @@
 <h1>Dashboard</h1>
+
 <br>
 
 <div class="cards">
-    <div class="card">
-        <h3>Productos</h3>
-        <h1>0</h1>
-    </div>
+    <?php
+    component('card',[
+        'title'=>'Productos',
+        'value'=>0,
+        'icon'=>'fa-box'
+    ]);
 
-    <div class="card">
-        <h3>Clientes</h3>
-        <h1>0</h1>
-    </div>
+    component('card',[
+        'title'=>'Clientes',
+        'value'=>0,
+        'icon'=>'fa-users'
+    ]);
 
-    <div class="card">
-        <h3>Pedidos</h3>
-        <h1>0</h1>
-    </div>
+    component('card',[
+        'title'=>'Pedidos',
+        'value'=>0,
+        'icon'=>'fa-cart-shopping'
+    ]);
 
-    <div class="card">
-        <h3>Ventas</h3>
-        <h1>Q 0.00</h1>
-    </div>
-
+    component('card',[
+        'title'=>'Ventas',
+        'value'=>'Q 0.00',
+        'icon'=>'fa-coins'
+    ]);
+    ?>
 </div>

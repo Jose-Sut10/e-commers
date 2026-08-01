@@ -61,3 +61,15 @@ if (!function_exists('url')) {
     }
 
 }
+
+if (!function_exists('component')) {
+    function component(string $component, array $data = []): void
+    {
+        extract($data);
+        $path = BASE_PATH . "/resources/views/components/{$component}.php";
+        if (!file_exists($path)) {
+            die("El componente '{$component}' no existe.");
+        }
+        require $path;
+    }
+}
