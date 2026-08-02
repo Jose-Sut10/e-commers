@@ -4,9 +4,10 @@ namespace Core;
 
 class Request
 {
-    public function method(): string
-    {
-        return $_SERVER['REQUEST_METHOD'];
+    public function method(): string{
+        return strtoupper(
+        $_SERVER['REQUEST_METHOD'] ?? 'GET'
+        );
     }
 
     public function uri(): string{
@@ -26,13 +27,12 @@ class Request
     return $uri ?: '/';
     }
 
-    public function input(string $key, mixed $default = null): mixed
-    {
-        return $_POST[$key] ?? $_GET[$key] ?? $default;
+    public function input(string $key, mixed $default = null): mixed{
+        $data = $this->all();
+        return $data[$key] ?? $default;
     }
 
-    public function all(): array
-    {
+    public function all(): array{
         return array_merge($_GET, $_POST);
     }
 }
