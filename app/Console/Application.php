@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Console\Commands\MakeControllerCommand;
+use App\Console\Commands\MakeModelCommand;
 
 class Application{
     public function run(array $argv): void
@@ -18,7 +19,9 @@ class Application{
             case 'make:controller':
                 (new MakeControllerCommand())->handle(array_slice($argv, 2));
                 break;
-
+            case 'make:model':
+                (new MakeModelCommand())->handle(array_slice($argv, 2));
+            break;
             default:
                 echo "Comando no encontrado.\n";
         }
