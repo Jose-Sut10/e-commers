@@ -1,8 +1,7 @@
 <?php
-
 namespace Core;
-use Core\Session;
 use Core\Middleware\VerifyCsrfToken;
+use Core\Middleware\Authenticate;
 
 class Kernel{
     public function handle(): void{
@@ -11,9 +10,10 @@ class Kernel{
         $router = new Router();
         require_once BASE_PATH . '/routes/web.php';
         $request = new Request();
-        
+
         $middleware = [
             new VerifyCsrfToken(),
+            new Authenticate(),
         ];
 
         foreach ($middleware as $item) {

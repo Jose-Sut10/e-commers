@@ -1,10 +1,21 @@
 <h1>Iniciar sesión</h1>
 <?php $success = session('success'); ?>
+<?php $warning = session('warning'); ?>
 
 <?php if ($success): ?>
     <div class="alert alert-success">
         <?= htmlspecialchars(
             (string) $success,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($warning): ?>
+    <div class="alert alert-warning">
+        <?= htmlspecialchars(
+            (string) $warning,
             ENT_QUOTES,
             'UTF-8'
         ) ?>
