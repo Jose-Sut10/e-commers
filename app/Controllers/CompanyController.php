@@ -1,6 +1,7 @@
 <?php
 namespace App\Controllers;
 use Throwable;
+use RuntimeException;
 use Core\Controller;
 use Core\Request;
 use Core\Session;
@@ -8,21 +9,42 @@ use App\Models\Company;
 
 class CompanyController extends Controller{
     public function index(): void{
+        $company = Company::first();
         view('company/index', [
-            'title' => 'Empresa'
+            'title'   => 'Empresa',
+            'company' => $company,
         ]);
     }
 
     public function create(): void{
+        /** En este CMS solo registraremos una empresa principal.*/
+        if (Company::first()) {
+            Session::flash(
+                'warning',
+                'Ya existe una empresa registrada.'
+            );
+            redirect('empresa');
+        }
         view('company/create', [
-            'title' => 'Registrar empresa'
+            'title' => 'Registrar empresa',
         ]);
     }
 
     public function store(): void{
+        /*
+         * Evitamos que alguien registre otra empresa
+         * enviando directamente una petición POST.
+         */
+        if (Company::first()) {
+            Session::flash(
+                'warning',
+                'Ya existe una empresa registrada.'
+            );
+            redirect('empresa');
+        }
+
         $request = new Request();
         $input = $request->all();
-
         $result = validator($input, [
             'name'  => 'required|min:3|max:150',
             'email' => 'email|max:150',
@@ -32,18 +54,20 @@ class CompanyController extends Controller{
         if ($result->fails()) {
             Session::flash('errors', $result->errors());
             Session::flash('old', $input);
+
             redirect('empresa/crear');
         }
 
-        /*
-         * Solo guardamos los campos permitidos.
-         * No enviamos directamente todo el contenido de $_POST al modelo.*/
         $now = date('Y-m-d H:i:s');
 
         $data = [
             'name'       => trim((string) ($input['name'] ?? '')),
-            'email'      => $this->nullableString($input['email'] ?? null),
-            'tax'        => $this->taxValue($input['tax'] ?? null),
+            'email'      => $this->nullableString(
+                $input['email'] ?? null
+            ),
+            'tax'        => $this->taxValue(
+                $input['tax'] ?? null
+            ),
             'created_at' => $now,
             'updated_at' => $now,
         ];
@@ -52,7 +76,7 @@ class CompanyController extends Controller{
             $company = new Company($data);
 
             if (!$company->save()) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'El modelo no pudo guardar la empresa.'
                 );
             }
@@ -63,12 +87,13 @@ class CompanyController extends Controller{
             );
 
             redirect('empresa');
-        } catch (Throwable $exception) {
+            } catch (Throwable $exception) {
             error_log($exception->getMessage());
+
             Session::flash('errors', [
-            'general' => [
-                'No fue posible guardar la empresa.'
-            ]
+                'general' => [
+                    'No fue posible guardar la empresa.'
+                ],
             ]);
             Session::flash('old', $input);
             redirect('empresa/crear');

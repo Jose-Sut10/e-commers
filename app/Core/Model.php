@@ -132,4 +132,25 @@ abstract class Model{
             $this->attributes[$this->primaryKey]
         );
     }
+
+    public static function first(): ?static{
+        $instance = new static();
+
+        $row = Database::first(
+            sprintf(
+                'SELECT * FROM %s ORDER BY %s ASC LIMIT 1',
+                $instance->table,
+                $instance->primaryKey
+            )
+        );
+
+        if (!$row) {
+            return null;
+        }
+
+        $instance->fill($row);
+        $instance->exists = true;
+        $instance->syncOriginal();
+        return $instance;
+    }
 }
