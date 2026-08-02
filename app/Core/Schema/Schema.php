@@ -1,31 +1,22 @@
 <?php
 namespace Core\Schema;
 use Core\Database;
+use Core\Schema\Grammar\MySqlGrammar;
 
 class Schema{
     public static function create(
         string $table,
         callable $callback
-    ): void{
-
-        $blueprint=new Blueprint();
+    ): void
+    {
+        $blueprint = new Blueprint();
         $callback($blueprint);
-        $columns=[];
+        $grammar = new MySqlGrammar();
+        $sql = $grammar->compileCreate(
+            $table,
+            $blueprint
+        );
 
-        foreach(
-            $blueprint->getColumns()
-            as $column
-        ){
-            $columns[]=
-                "{$column->name} {$column->type}";
-        }
-
-        $sql=
-            "CREATE TABLE {$table} ("
-            .
-            implode(',',$columns)
-            .
-            ")";
         Database::query($sql);
         echo "Tabla {$table} creada.\n";
     }
