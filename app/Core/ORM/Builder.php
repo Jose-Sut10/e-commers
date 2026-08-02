@@ -8,7 +8,7 @@ class Builder
     protected string $model;
     protected string $table;
     protected array $select = ['*'];
-    protected array $where = [];
+    protected array $wheres = [];
     protected ?string $orderBy = null;
     protected ?int $limit = null;
 
@@ -17,14 +17,45 @@ class Builder
         return $this;
     }
 
+    public function select(string ...$columns): static{
+        $this->select = $columns;
+        return $this;
+    }
+
     public function where(
         string $column,
-        mixed $value
-    ): static {
-        $this->where[] = [
-            $column,
-            '=',
-            $value
+        mixed $operator,
+        mixed $value = null
+        ): static{
+        if (func_num_args() === 2) {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        $this->wheres[] = [
+            'boolean' => 'AND',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value
+        ];
+        return $this;
+    }
+
+    public function orWhere(
+        string $column,
+        mixed $operator,
+        mixed $value = null
+        ): static{
+        if (func_num_args() === 2) {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        $this->wheres[] = [
+            'boolean' => 'OR',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value
         ];
         return $this;
     }
@@ -36,6 +67,31 @@ class Builder
         $this->orderBy =
             "{$column} {$direction}";
         return $this;
+    }
+
+    public function orderByDesc(
+        string $column
+        ): static{
+        return $this->orderBy(
+            $column,
+            'DESC'
+        );
+    }
+
+    public function first(): ?object{
+        $this->limit = 1;
+        $items = $this->get();
+        return $items[0] ?? null;
+    }
+
+    public function count(): int{
+        $this->select = ['COUNT(*) AS total'];
+
+        $rows = Database::select(
+            $this->toSql(),
+            $this->getBindings()
+        );
+        return (int) $rows[0]['total'];
     }
 
     public function limit(
