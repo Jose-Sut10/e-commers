@@ -1,12 +1,14 @@
-#!/usr/bin/env php
 <?php
 
 define('BASE_PATH', __DIR__);
-
 require BASE_PATH . '/vendor/autoload.php';
 
+/*
+ * Carga la configuración de la aplicación
+ * y de la base de datos.
+ */
+require BASE_PATH . '/bootstrap/app.php';
+
 use App\Console\Application;
-
-$app = new Application();
-
-$app->run($argv);
+$application = new Application();
+$application->run($argv);

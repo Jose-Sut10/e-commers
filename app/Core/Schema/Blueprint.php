@@ -88,12 +88,13 @@ class Blueprint{
     public function timestamps(): void{
         $this->addColumn(
             'created_at',
-            'TIMESTAMP'
-        );
+            'DATETIME'
+        )->nullable();
+
         $this->addColumn(
             'updated_at',
-            'TIMESTAMP'
-        );
+            'DATETIME'
+        )->nullable();
     }
 
     public function getColumns(): array{

@@ -5,9 +5,9 @@ use Core\Schema\Grammar\MySqlGrammar;
 
 class Schema{
     public static function create(
-    string $table,
-    callable $callback
-    ): void{
+        string $table,
+        callable $callback
+    ): void {
         $blueprint = new Blueprint();
         $callback($blueprint);
         $grammar = new MySqlGrammar();
@@ -17,12 +17,14 @@ class Schema{
             $blueprint
         );
         Database::query($sql);
-        echo "Tabla {$table} creada.\n";
+        echo "Tabla {$table} creada." . PHP_EOL;
     }
 
-    public static function dropIfExists(string $table): void{
+    public static function dropIfExists(
+        string $table
+    ): void {
         Database::query(
-            "DROP TABLE IF EXISTS {$table}"
+            "DROP TABLE IF EXISTS `{$table}`"
         );
     }
 }

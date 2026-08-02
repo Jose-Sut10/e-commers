@@ -1,36 +1,42 @@
 <?php
+
 namespace App\Console;
 
-use App\Console\Commands\MakeControllerCommand;
+use App\Console\Commands\MigrateCommand;
 use App\Console\Commands\MakeModelCommand;
+use App\Console\Commands\MakeControllerCommand;
 use App\Console\Commands\MakeMigrationCommand;
 
-class Application{
-    public function run(array $argv): void
-    {
-        $command = $argv[1] ?? '';
+class Application
+{
+    protected array $commands = [
+        'make:controller' => MakeControllerCommand::class,
+        'make:model' => MakeModelCommand::class,
+        'make:migration' => MakeMigrationCommand::class,
+        'migrate' => MigrateCommand::class,
+    ];
 
-        switch ($command) {
+    public function run(array $argv): void{
+        $commandName = $argv[1] ?? 'about';
 
-            case 'about':
-                $this->about();
-            break;
-            case 'make:controller':
-                (new MakeControllerCommand())->handle(array_slice($argv, 2));
-                break;
-            case 'make:model':
-                (new MakeModelCommand())->handle(array_slice($argv, 2));
-            break;
-            case 'make:migration':
-                (new MakeMigrationCommand())->handle(array_slice($argv, 2));
-            break;
-            default:
-                echo "Comando no encontrado.\n";
+        if ($commandName === 'about') {
+            $this->about();
+            return;
         }
+
+        if (!isset($this->commands[$commandName])) {
+            echo "El comando '{$commandName}' no existe.\n";
+            return;
+        }
+
+        $commandClass = $this->commands[$commandName];
+        $command = new $commandClass();
+        $command->handle(
+            array_slice($argv, 2)
+        );
     }
 
-    private function about(): void
-    {
+    private function about(): void{
         echo PHP_EOL;
         echo "==============================\n";
         echo "   EcommerceCMS Framework\n";

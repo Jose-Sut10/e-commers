@@ -5,14 +5,19 @@ namespace Core;
 use PDO;
 use PDOException;
 
-class Database
-{
+class Database{
     private static ?PDO $connection = null;
 
     public static function connect(): PDO{
         if (self::$connection === null) {
 
             $config = Config::get('database');
+
+            if (!is_array($config)) {
+                throw new \RuntimeException(
+                    'La configuración de la base de datos no fue cargada.'
+                );
+            }
 
             $dsn = sprintf(
                 "mysql:host=%s;dbname=%s;charset=utf8mb4",
