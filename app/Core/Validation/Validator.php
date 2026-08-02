@@ -25,7 +25,24 @@ class Validator{
             $rules
         );
     }
+
     public function validate(): ValidationResult{
+        foreach ($this->rules as $field => $rules) {
+            $value = $this->data[$field] ?? null;
+            foreach (RuleResolver::resolve($rules) as $rule) {
+                $error = $rule->validate(
+                    $field,
+                    $value,
+                    $this->data
+                );
+                if ($error) {
+                    $this->result->add(
+                        $field,
+                        $error
+                    );
+                }
+            }
+        }
         return $this->result;
     }
 }
