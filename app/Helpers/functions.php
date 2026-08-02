@@ -2,6 +2,7 @@
 
 use Core\Config;
 use Core\View;
+use Core\Component;
 
 if (!function_exists('config')) {
 
@@ -65,11 +66,9 @@ if (!function_exists('url')) {
 if (!function_exists('component')) {
     function component(string $component, array $data = []): void
     {
-        extract($data);
-        $path = BASE_PATH . "/resources/views/components/{$component}.php";
-        if (!file_exists($path)) {
-            die("El componente '{$component}' no existe.");
-        }
-        require $path;
+        Component::render(
+            $component,
+            $data
+        );
     }
 }

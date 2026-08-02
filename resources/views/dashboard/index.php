@@ -29,3 +29,33 @@
     ]);
     ?>
 </div>
+
+<br><br>
+
+<?php
+    component('button',[
+        'text'=>'Nuevo Producto',
+        'color'=>'primary',
+        'icon'=>'fa-plus'
+    ]);
+?>
+
+&nbsp;
+
+<?php
+    component('button',[
+        'text'=>'Exportar',
+        'color'=>'success',
+        'icon'=>'fa-file-excel'
+    ]);
+?>
+
+&nbsp;
+
+<?php
+    component('button',[
+        'text'=>'Eliminar',
+        'color'=>'danger',
+        'icon'=>'fa-trash'
+    ]);
+?>
