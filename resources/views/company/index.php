@@ -71,6 +71,16 @@
         </div>
     </section>
 
+    <div class="company-actions">
+        <a href="<?= htmlspecialchars(
+            url('empresa/editar'),
+            ENT_QUOTES,
+            'UTF-8'
+            ) ?>">
+                Editar información
+        </a>
+    </div>
+
 <?php else: ?>
 
     <p> Todavía no hay una empresa registrada.</p>
