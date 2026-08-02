@@ -4,52 +4,59 @@ namespace Core\Schema;
 class Blueprint{
     protected array $columns=[];
 
-    public function id(): void{
-        $this->columns[] = new Column(
+    public function id(): Column{
+        $column = new Column(
             'id',
-            'INT AUTO_INCREMENT PRIMARY KEY'
+            'INT'
         );
+        $column
+            ->unsigned()
+            ->autoIncrement()
+            ->primary();
+
+        $this->columns[] = $column;
+        return $column;
     }
 
     public function string(
         string $name,
-        int $length=255
-    ): void{
-        $this->columns[]=
-            new Column(
-                $name,
-                "VARCHAR($length)"
-            );
+        int $length = 255
+    ): Column {
+        $column = new Column(
+            $name,
+            "VARCHAR($length)"
+    );
+    $this->columns[] = $column;
+    return $column;
+}
+
+    public function integer(string $name): Column{
+        $column = new Column($name, 'INT');
+        $this->columns[] = $column;
+        return $column;
     }
 
-    public function integer(string $name): void{
-        $this->columns[]=
-            new Column(
-                $name,
-                "INT"
-            );
-    }
-
-    public function boolean(string $name): void{
-        $this->columns[]=
-            new Column(
-                $name,
-                "BOOLEAN"
-            );
+    public function boolean(string $name): Column{
+        $column = new Column(
+            $name,
+            'BOOLEAN'
+        );
+        $this->columns[] = $column;
+        return $column;
     }
 
     public function decimal(
         string $name,
         int $precision,
         int $scale
-    ): void{
+        ): Column {
 
-        $this->columns[]=
-            new Column(
-                $name,
-                "DECIMAL($precision,$scale)"
-            );
-
+        $column = new Column(
+            $name,
+            "DECIMAL($precision,$scale)"
+        );
+        $this->columns[] = $column;
+        return $column;
     }
 
     public function timestamps(): void{
