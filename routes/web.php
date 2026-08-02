@@ -1,8 +1,7 @@
 <?php
 
 use App\Controllers\HomeController;
-use App\Controllers\EmpresaController;
-use App\Controllers\CompanyController;  
+use App\Controllers\CompanyController;
 
 $router->get('/', [
     HomeController::class,
@@ -10,21 +9,16 @@ $router->get('/', [
 ]);
 
 $router->get('/empresa', [
-    EmpresaController::class,
-    'index'
-]);
-
-$router->get('/company', [
     CompanyController::class,
     'index'
 ]);
 
-$router->get('/company/create', [
+$router->get('/empresa/crear', [
     CompanyController::class,
     'create'
 ]);
 
-$router->post('/company', [
+$router->post('/empresa', [
     CompanyController::class,
     'store'
 ]);

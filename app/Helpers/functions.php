@@ -132,5 +132,3 @@ if (!function_exists('redirect')) {
         exit;
     }
 }
-
-Session::flash('errors', $errors); //quitar después, solo para prueba
