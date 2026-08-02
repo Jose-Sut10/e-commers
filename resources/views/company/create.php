@@ -17,6 +17,9 @@
         ENT_QUOTES,
         'UTF-8'
     ) ?>">
+
+    <?= csrf_field() ?>
+
     <div>
         <label for="name">Nombre de la empresa</label>
 

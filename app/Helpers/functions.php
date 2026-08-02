@@ -5,6 +5,7 @@ use Core\View;
 use Core\Component;
 use Core\Validation\Validator; 
 use Core\Session;
+use Core\Security\Csrf;
 
 if (!function_exists('session')) {
     function session(
@@ -129,5 +130,18 @@ if (!function_exists('redirect')) {
     function redirect(string $path): never{
         header('Location: ' . url($path));
         exit;
+    }
+}
+
+//funciones de seguridad
+if (!function_exists('csrf_token')) {
+    function csrf_token(): string{
+        return Csrf::token();
+    }
+}
+
+if (!function_exists('csrf_field')) {
+    function csrf_field(): string{
+        return Csrf::field();
     }
 }

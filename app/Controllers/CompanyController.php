@@ -6,6 +6,7 @@ use Core\Controller;
 use Core\Request;
 use Core\Session;
 use App\Models\Company;
+use Core\Security\Csrf;
 
 class CompanyController extends Controller{
     public function index(): void{
@@ -45,6 +46,17 @@ class CompanyController extends Controller{
 
         $request = new Request();
         $input = $request->all();
+
+        if (!Csrf::verify($input['_token'] ?? null)) {
+            Session::flash('errors', [
+                'general' => [
+                    'La sesión del formulario expiró. Recarga la página e inténtalo nuevamente.'
+                ],
+            ]);
+            Session::flash('old', $input);
+            redirect('empresa/crear');
+        }
+
         $result = validator($input, [
             'name'  => 'required|min:3|max:150',
             'email' => 'email|max:150',
@@ -142,6 +154,17 @@ class CompanyController extends Controller{
 
         $request = new Request();
         $input = $request->all();
+
+        if (!Csrf::verify($input['_token'] ?? null)) {
+            Session::flash('errors', [
+                'general' => [
+                    'La sesión del formulario expiró. Recarga la página e inténtalo nuevamente.'
+                ],
+            ]);
+            
+            Session::flash('old', $input);
+            redirect('empresa/editar');
+        }
 
         $result = validator($input, [
             'name'  => 'required|min:3|max:150',
