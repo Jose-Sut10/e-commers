@@ -111,4 +111,92 @@ class CompanyController extends Controller{
         }
         return (float) $value;
     }
+
+    public function edit(): void{
+        $company = Company::first();
+
+        if (!$company) {
+            Session::flash(
+                'warning',
+                'Primero debes registrar una empresa.'
+            );
+            redirect('empresa/crear');
+        }
+
+        view('company/edit', [
+            'title'   => 'Editar empresa',
+            'company' => $company,
+        ]);
+    }
+
+    public function update(): void{
+        $company = Company::first();
+
+        if (!$company) {
+            Session::flash(
+                'warning',
+                'No se encontró una empresa para actualizar.'
+            );
+            redirect('empresa/crear');
+        }
+
+        $request = new Request();
+        $input = $request->all();
+
+        $result = validator($input, [
+            'name'  => 'required|min:3|max:150',
+            'email' => 'email|max:150',
+            'tax'   => 'numeric|min:0|max:100',
+        ])->validate();
+
+        if ($result->fails()) {
+            Session::flash(
+                'errors',
+                $result->errors()
+            );
+            Session::flash('old', $input);
+            redirect('empresa/editar');
+        }
+
+        try {
+            $company->name = trim(
+                (string) ($input['name'] ?? '')
+            );
+
+            $company->email = $this->nullableString(
+                $input['email'] ?? null
+            );
+
+            $company->tax = $this->taxValue(
+                $input['tax'] ?? null
+            );
+
+            $company->updated_at = date(
+                'Y-m-d H:i:s'
+            );
+
+            if (!$company->save()) {
+                throw new RuntimeException(
+                    'El modelo no pudo actualizar la empresa.'
+                );
+            }
+
+            Session::flash(
+                'success',
+                'La información de la empresa fue actualizada correctamente.'
+            );
+
+            redirect('empresa');
+        } catch (Throwable $exception) {
+            error_log($exception->getMessage());
+
+            Session::flash('errors', [
+                'general' => [
+                    'No fue posible actualizar la empresa.'
+                ],
+            ]);
+            Session::flash('old', $input);
+            redirect('empresa/editar');
+        }
+    }
 }
