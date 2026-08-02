@@ -3,6 +3,14 @@ namespace Core\Schema;
 
 class Blueprint{
     protected array $columns=[];
+        private function addColumn(
+        string $name,
+        string $type
+        ): Column{
+        $column = new Column($name, $type);
+        $this->columns[] = $column;
+        return $column;
+    }
 
     public function id(): Column{
         $column = new Column(
@@ -21,19 +29,18 @@ class Blueprint{
     public function string(
         string $name,
         int $length = 255
-    ): Column {
-        $column = new Column(
+        ): Column{
+        return $this->addColumn(
             $name,
             "VARCHAR($length)"
-    );
-    $this->columns[] = $column;
-    return $column;
-}
+        );
+    }
 
     public function integer(string $name): Column{
-        $column = new Column($name, 'INT');
-        $this->columns[] = $column;
-        return $column;
+        return $this->addColumn(
+            $name,
+            'INT'
+        );
     }
 
     public function boolean(string $name): Column{
