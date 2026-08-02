@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+define('BASE_PATH', __DIR__);
+
+require BASE_PATH . '/vendor/autoload.php';
+
+use App\Console\Application;
+
+$app = new Application();
+
+$app->run($argv);
