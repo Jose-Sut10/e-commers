@@ -24,4 +24,8 @@ class User extends Model{
         }
         return $instance->newFromDatabase($row);
     }
+
+    public function isAdmin(): bool{
+        return $this->role === 'admin';
+    }
 }

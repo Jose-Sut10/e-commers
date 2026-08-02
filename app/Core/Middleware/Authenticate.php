@@ -11,6 +11,7 @@ class Authenticate implements Middleware{
     protected array $protectedRoutes = [
         '/',
         '/empresa',
+        '/usuarios',
     ];
 
     public function handle(Request $request): void{

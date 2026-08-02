@@ -1,7 +1,8 @@
 <?php
 namespace Core;
-use Core\Middleware\VerifyCsrfToken;
 use Core\Middleware\Authenticate;
+use Core\Middleware\AuthorizeAdmin;
+use Core\Middleware\VerifyCsrfToken;
 
 class Kernel{
     public function handle(): void{
@@ -14,6 +15,7 @@ class Kernel{
         $middleware = [
             new VerifyCsrfToken(),
             new Authenticate(),
+            new AuthorizeAdmin(),
         ];
 
         foreach ($middleware as $item) {
