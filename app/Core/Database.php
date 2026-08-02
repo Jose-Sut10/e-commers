@@ -100,4 +100,54 @@ class Database
                 array_values($data)
             );
     }
+
+    public static function update(
+        string $table,
+        array $data,
+        string $primaryKey,
+        mixed $id
+        ): bool{
+        $columns = [];
+
+        foreach ($data as $column => $value) {
+            $columns[] = "{$column} = ?";
+        }
+
+        $sql = sprintf(
+            "UPDATE %s SET %s WHERE %s = ?",
+            $table,
+            implode(', ', $columns),
+            $primaryKey
+        );
+
+        $params = array_values($data);
+        $params[] = $id;
+        return self::execute($sql, $params);
+    }
+
+    public static function find(
+        string $table,
+        string $primaryKey,
+        mixed $id
+        ): ?array{
+        $sql = sprintf(
+            "SELECT * FROM %s WHERE %s = ? LIMIT 1",
+            $table,
+            $primaryKey
+        );
+        return self::first($sql, [$id]);
+    }
+
+    public static function delete(
+        string $table,
+        string $primaryKey,
+        mixed $id
+        ): bool{
+        $sql = sprintf(
+            "DELETE FROM %s WHERE %s = ?",
+            $table,
+            $primaryKey
+        );
+        return self::execute($sql, [$id]);
+    }
 }
