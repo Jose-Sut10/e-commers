@@ -9,7 +9,7 @@ class Validator{
     public function __construct(
         array $data,
         array $rules
-        ){
+        ) {
         $this->data = $data;
         $this->rules = $rules;
         $this->result = new ValidationResult();
@@ -18,28 +18,23 @@ class Validator{
     public static function make(
         array $data,
         array $rules
-        ): static{
-
-        return new static(
-            $data,
-            $rules
-        );
+        ): static {
+        return new static($data, $rules);
     }
 
     public function validate(): ValidationResult{
         foreach ($this->rules as $field => $rules) {
             $value = $this->data[$field] ?? null;
+
             foreach (RuleResolver::resolve($rules) as $rule) {
                 $error = $rule->validate(
                     $field,
                     $value,
                     $this->data
                 );
-                if ($error) {
-                    $this->result->add(
-                        $field,
-                        $error
-                    );
+
+                if ($error !== null) {
+                    $this->result->add($field, $error);
                 }
             }
         }
