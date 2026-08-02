@@ -65,11 +65,10 @@ class CompanyController extends Controller{
             redirect('empresa');
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
-
             Session::flash('errors', [
-                'general' => [
-                    'No fue posible guardar la empresa. Revisa la conexión y la estructura de la tabla.'
-                ]
+            'general' => [
+                'No fue posible guardar la empresa.'
+            ]
             ]);
             Session::flash('old', $input);
             redirect('empresa/crear');
