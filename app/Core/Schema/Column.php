@@ -53,4 +53,16 @@ class Column
             . implode(' ', $this->attributes)
         );
     }
+
+    public function index(): static{
+        $this->attributes[] = 'INDEX';
+        return $this;
+    }
+
+    public function comment(
+        string $text
+        ): static{
+        $this->attributes[] = "COMMENT '{$text}'";
+        return $this;
+    }
 }
