@@ -59,18 +59,10 @@ class CompanyController extends Controller{
             redirect('empresa/crear');
         }
 
-        $now = date('Y-m-d H:i:s');
-
         $data = [
-            'name'       => trim((string) ($input['name'] ?? '')),
-            'email'      => $this->nullableString(
-                $input['email'] ?? null
-            ),
-            'tax'        => $this->taxValue(
-                $input['tax'] ?? null
-            ),
-            'created_at' => $now,
-            'updated_at' => $now,
+            'name' => trim((string) ($input['name'] ?? '')),
+            'email' => $this->nullableString($input['email'] ?? null),
+            'tax' => $this->taxValue($input['tax'] ?? null),
         ];
 
         try {
@@ -170,10 +162,6 @@ class CompanyController extends Controller{
 
             $company->tax = $this->taxValue(
                 $input['tax'] ?? null
-            );
-
-            $company->updated_at = date(
-                'Y-m-d H:i:s'
             );
 
             if (!$company->save()) {

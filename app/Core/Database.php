@@ -37,6 +37,9 @@ class Database
                     PDO::ATTR_DEFAULT_FETCH_MODE,
                     PDO::FETCH_ASSOC
                 );
+                self::$connection->exec(
+                    "SET time_zone = '-06:00'"
+                );
 
             } catch (PDOException $e) {
 

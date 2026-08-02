@@ -1,13 +1,19 @@
 <?php
-
 use Core\Config;
 
 Config::set(
     'app',
-    require __DIR__ . '/../config/app.php'
+    require BASE_PATH . '/config/app.php'
 );
 
 Config::set(
     'database',
-    require __DIR__ . '/../config/database.php'
+    require BASE_PATH . '/config/database.php'
+);
+
+date_default_timezone_set(
+    Config::get(
+        'app.timezone',
+        'America/Guatemala'
+    )
 );
