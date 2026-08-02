@@ -9,18 +9,20 @@ class Request
         return $_SERVER['REQUEST_METHOD'];
     }
 
-    public function uri(): string
-    {
+    public function uri(): string{
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-    $config = Config::get('app');
+    $basePath = Config::get('app.base_path', '');
 
-    $basePath = $config['base_path'] ?? '';
-
+    // Eliminar el base_path
     if ($basePath && str_starts_with($uri, $basePath)) {
         $uri = substr($uri, strlen($basePath));
     }
 
+    // Eliminar index.php si viene en la URL
+    $uri = preg_replace('#^/index\.php#', '', $uri);
+
+    // Si queda vacío, devolver "/"
     return $uri ?: '/';
     }
 
