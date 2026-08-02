@@ -1,48 +1,43 @@
 <?php
 
 namespace Core;
-
-use PDO;
-use BadMethodCallException;
-use Core\Query\Builder;
+use Core\ORM\Builder;
 
 abstract class Model{
-    protected PDO $db;
     protected string $table;
+    protected string $primaryKey = 'id';
+    protected array $attributes = [];
+    protected array $original = [];
+    protected bool $exists = false;
 
-    public function __construct(){
-        $this->db = Database::connect();
+    public function __construct(array $attributes = []){
+        $this->fill($attributes);
     }
 
-    public static function query(): Builder{
-        $instance = new static();
-
-        return (new Builder())
-            ->table($instance->table)
-            ->model(static::class);
-    }
-
-    public static function __callStatic($method, $arguments){
-        $instance = new static();
-
-        if (!method_exists($instance, $method)) {
-            return $instance->query()->$method(...$arguments);
+    public function fill(array $attributes): static{
+        foreach ($attributes as $key => $value) {
+            $this->attributes[$key] = $value;
         }
-        return $instance->$method(...$arguments);
+        return $this;
     }
 
-    public function all(): array{
-        return $this->query()->get();
+    public function __get(string $key): mixed{
+        return $this->attributes[$key] ?? null;
     }
 
-    public static function where(
-        string $column,
-        mixed $value
-    ): Builder {
-        return static::query()
-            ->where(
-                $column,
-                $value
-            );
+    public function __set(string $key, mixed $value): void{
+        $this->attributes[$key] = $value;
+    }
+
+    public function toArray(): array{
+        return $this->attributes;
+    }
+
+    public function save(): bool{
+        if ($this->exists) {
+            echo "UPDATE";
+        } else {
+            echo "INSERT";
+        }
     }
 }
