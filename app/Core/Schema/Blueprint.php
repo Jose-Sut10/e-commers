@@ -3,14 +3,37 @@ namespace Core\Schema;
 
 class Blueprint{
     protected array $columns=[];
+    protected array $foreignKeys = [];
 
-        protected function addColumn(
+    protected function addColumn(
         string $name,
         string $type
         ): Column{
         $column = new Column($name, $type);
         $this->columns[] = $column;
         return $column;
+    }
+
+    public function foreignId(
+        string $column
+    ): ForeignKey
+    {
+        $this->integer($column)
+            ->unsigned();
+
+        $foreign = new ForeignKey($column);
+        $this->foreignKeys[] = $foreign;
+        return $foreign;
+    }
+
+    public function getForeignKeys(): array{
+        return $this->foreignKeys;
+    }
+
+    public function foreignIdFor(string $model): ForeignKey{
+        $class = class_basename($model);
+        $column = strtolower($class) . '_id';
+        return $this->foreignId($column);
     }
 
     public function id(): Column{

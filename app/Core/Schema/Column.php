@@ -7,6 +7,7 @@ class Column
     public string $name;
     public string $type;
     public array $attributes = [];
+    public ?string $after = null;
 
     public function __construct(string $name, string $type){
         $this->name = $name;
@@ -63,6 +64,11 @@ class Column
         string $text
         ): static{
         $this->attributes[] = "COMMENT '{$text}'";
+        return $this;
+    }
+
+    public function after(string $column): static{
+        $this->after = $column;
         return $this;
     }
 }
