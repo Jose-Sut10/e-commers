@@ -9,8 +9,7 @@ class Database
 {
     private static ?PDO $connection = null;
 
-    public static function connect(): PDO
-    {
+    public static function connect(): PDO{
         if (self::$connection === null) {
 
             $config = Config::get('database');
@@ -48,5 +47,32 @@ class Database
         }
 
         return self::$connection;
+    }
+
+    public static function query(string $sql): void{
+    self::connect()->exec($sql);
+    }
+
+    public static function select(string $sql, array $params = []): array{
+    $stmt = self::connect()->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll();
+    }
+
+    public static function first(string $sql, array $params = []): array|null{
+        $stmt = self::connect()->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetch();
+        return $result ?: null;
+    }
+
+    public static function execute(string $sql, array $params = []): bool{
+        $stmt = self::connect()->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    public static function lastInsertId(): string{
+        return self::connect()->lastInsertId();
     }
 }
