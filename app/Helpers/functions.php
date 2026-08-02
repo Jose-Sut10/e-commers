@@ -98,7 +98,6 @@ if (!function_exists('url')) {
             '/'
         );
         $path = ltrim($path, '/');
-
         return $path === ''
             ? $baseUrl
             : "{$baseUrl}/{$path}";

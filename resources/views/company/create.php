@@ -12,7 +12,11 @@
 
 <form
     method="POST"
-    action="<?= url('empresa') ?>">
+    action="<?= htmlspecialchars(
+        url('empresa'),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>">
     <div>
         <label for="name">Nombre de la empresa</label>
 
