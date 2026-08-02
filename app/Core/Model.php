@@ -48,6 +48,7 @@ abstract class Model{
                 Database::lastInsertId();
             $this->exists = true;
         }
+        $this->syncOriginal();
         return $result;
     }
 
@@ -60,5 +61,27 @@ abstract class Model{
 
     protected function update(): bool{
         return true;
+    }
+
+    protected function syncOriginal(): void{
+        $this->original = $this->attributes;
+    }
+
+    public function isDirty(): bool{
+        return $this->attributes !== $this->original;
+    }
+
+    public function getDirty(): array{
+        $dirty = [];
+
+        foreach ($this->attributes as $key => $value) {
+            if (
+                !array_key_exists($key, $this->original)
+                || $this->original[$key] !== $value
+            ) {
+                $dirty[$key] = $value;
+            }
+        }
+        return $dirty;
     }
 }
