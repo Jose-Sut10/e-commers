@@ -1,6 +1,7 @@
 <?php
 namespace App\Console;
 use Core\FileGenerator;
+use App\Support\Str;
 
 abstract class GeneratorCommand extends Command
 {
@@ -17,7 +18,7 @@ abstract class GeneratorCommand extends Command
             return;
         }
 
-        if ($this->suffix && !str_ends_with($name, $this->suffix)) {
+        if ($this->suffix && !Str::endsWith($name, $this->suffix)) {
             $name .= $this->suffix;
         }
 

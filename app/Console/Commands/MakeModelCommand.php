@@ -1,6 +1,7 @@
 <?php
 namespace App\Console\Commands;
 use App\Console\GeneratorCommand;
+use App\Support\Str;
 
 class MakeModelCommand extends GeneratorCommand
 {
@@ -10,7 +11,7 @@ class MakeModelCommand extends GeneratorCommand
     {
         return [
             'class' => $name,
-            'table' => strtolower($name) . 's'
+            'table' => Str::plural($name)
         ];
     }
 }
