@@ -1,6 +1,7 @@
 <?php
 use App\Controllers\HomeController;
 use App\Controllers\CompanyController;
+use App\Controllers\AuthController;
 
 $router->get('/', [
     HomeController::class,
@@ -30,4 +31,20 @@ $router->get('/empresa/editar', [
 $router->post('/empresa/actualizar', [
     CompanyController::class,
     'update'
+]);
+
+//inicio de sesión
+$router->get('/login', [
+    AuthController::class,
+    'showLogin'
+]);
+
+$router->post('/login', [
+    AuthController::class,
+    'login'
+]);
+
+$router->post('/logout', [
+    AuthController::class,
+    'logout'
 ]);
