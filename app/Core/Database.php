@@ -75,4 +75,29 @@ class Database
     public static function lastInsertId(): string{
         return self::connect()->lastInsertId();
     }
+
+    public static function insert(
+        string $table,
+        array $data
+        ): bool
+        {
+            $columns = array_keys($data);
+
+            $placeholders = implode(
+                ',',
+                array_fill(0, count($columns), '?')
+            );
+
+            $sql = sprintf(
+                "INSERT INTO %s (%s) VALUES (%s)",
+                $table,
+                implode(',', $columns),
+                $placeholders
+            );
+
+            return self::execute(
+                $sql,
+                array_values($data)
+            );
+    }
 }

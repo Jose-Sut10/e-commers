@@ -33,11 +33,32 @@ abstract class Model{
         return $this->attributes;
     }
 
+    protected function insert(): bool{
+        $data = $this->attributes;
+
+        unset($data[$this->primaryKey]);
+
+        $result = Database::insert(
+            $this->table,
+            $data
+        );
+
+        if ($result) {
+            $this->attributes[$this->primaryKey] =
+                Database::lastInsertId();
+            $this->exists = true;
+        }
+        return $result;
+    }
+
     public function save(): bool{
         if ($this->exists) {
-            echo "UPDATE";
-        } else {
-            echo "INSERT";
+            return $this->update();
         }
+        return $this->insert();
+    }
+
+    protected function update(): bool{
+        return true;
     }
 }
