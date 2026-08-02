@@ -3,6 +3,7 @@
 use Core\Config;
 use Core\View;
 use Core\Component;
+use Core\Validation\Validator;  
 
 if (!function_exists('config')) {
 
@@ -71,4 +72,15 @@ if (!function_exists('component')) {
             $data
         );
     }
+}
+
+function validator(
+    array $data,
+    array $rules
+    ): Validator {
+
+    return Validator::make(
+        $data,
+        $rules
+    );
 }
