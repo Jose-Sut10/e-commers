@@ -1,12 +1,12 @@
 <?php
 
 namespace Core;
+use Core\Session;
 
-class Kernel
-{
-    public function handle(): void
-    {
+class Kernel{
+    public function handle(): void{
         require_once __DIR__ . '/../../bootstrap/app.php';
+        Session::start();
 
         $router = new Router();
 

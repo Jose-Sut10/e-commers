@@ -3,7 +3,43 @@
 use Core\Config;
 use Core\View;
 use Core\Component;
-use Core\Validation\Validator;  
+use Core\Validation\Validator; 
+use Core\Session;
+
+if (!function_exists('session')) {
+    function session(
+        ?string $key = null,
+        mixed $default = null
+    ): mixed {
+        if ($key === null) {
+            return Session::class;
+        }
+        return Session::get($key, $default);
+    }
+}
+
+if (!function_exists('old')) {
+    function old(
+        string $key,
+        mixed $default = ''
+        ): mixed {
+        $old = Session::get('old', []);
+
+        return $old[$key] ?? $default;
+    }
+}
+
+if (!function_exists('errors')) {
+    function errors(): array{
+        return Session::get('errors', []);
+    }
+}
+
+if (!function_exists('error')) {
+    function error(string $field): ?string{
+        return errors()[$field][0] ?? null;
+    }
+}
 
 if (!function_exists('config')) {
 
@@ -56,12 +92,17 @@ if (!function_exists('dump')) {
 }
 
 if (!function_exists('url')) {
+    function url(string $path = ''): string{
+        $baseUrl = rtrim(
+            config('app.url', ''),
+            '/'
+        );
+        $path = ltrim($path, '/');
 
-    function url(string $path = ''): string
-    {
-        return rtrim(config('app.url'), '/') . '/' . ltrim($path, '/');
+        return $path === ''
+            ? $baseUrl
+            : "{$baseUrl}/{$path}";
     }
-
 }
 
 if (!function_exists('component')) {
@@ -84,3 +125,12 @@ function validator(
         $rules
     );
 }
+
+if (!function_exists('redirect')) {
+    function redirect(string $path): never{
+        header('Location: ' . url($path));
+        exit;
+    }
+}
+
+Session::flash('errors', $errors); //quitar después, solo para prueba
