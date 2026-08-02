@@ -4,44 +4,45 @@ namespace Core;
 
 use PDO;
 use BadMethodCallException;
+use Core\Query\Builder;
 
-abstract class Model
-{
+abstract class Model{
     protected PDO $db;
-
     protected string $table;
 
-    public function __construct()
-    {
+    public function __construct(){
         $this->db = Database::connect();
     }
 
-    protected function query(): QueryBuilder
-    {
-        return new QueryBuilder(
-            $this->db,
-            $this->table
-        );
+    public static function query(): Builder{
+        $instance = new static();
+
+        return (new Builder())
+            ->table($instance->table)
+            ->model(static::class);
     }
 
-    public static function __callStatic($method, $arguments)
-    {
+    public static function __callStatic($method, $arguments){
         $instance = new static();
 
         if (!method_exists($instance, $method)) {
             return $instance->query()->$method(...$arguments);
         }
-
         return $instance->$method(...$arguments);
     }
 
-    public function all(): array
-    {
+    public function all(): array{
         return $this->query()->get();
     }
 
-    public function where(string $column, mixed $value): QueryBuilder
-    {
-        return $this->query()->where($column, $value);
+    public static function where(
+        string $column,
+        mixed $value
+    ): Builder {
+        return static::query()
+            ->where(
+                $column,
+                $value
+            );
     }
 }
