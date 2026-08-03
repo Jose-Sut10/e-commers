@@ -57,19 +57,32 @@ class Str{
     }
 
     public static function plural(string $value): string{
-        $value = strtolower($value);
+        $value = self::snake($value);
 
-        if (str_ends_with($value, 's')) {
-            return $value;
+        /*
+        * category → categories
+        * company  → companies
+        */
+        if (
+            str_ends_with($value, 'y')
+            && !preg_match('/[aeiou]y$/', $value)
+        ) {
+            return substr($value, 0, -1) . 'ies';
         }
 
-        if (str_ends_with($value, 'z')) {
-            return substr($value, 0, -1) . 'ces';
+        /*
+        * class → classes
+        * box   → boxes
+        * branch → branches
+        */
+        if (preg_match('/(s|x|z|ch|sh)$/', $value)) {
+            return $value . 'es';
         }
 
-        if (preg_match('/(a|e|i|o|u)$/', $value)) {
-            return $value . 's';
-        }
-        return $value . 'es';
-    }   
+        /*
+        * user → users
+        * product → products
+        */
+        return $value . 's';
+    }
 }
