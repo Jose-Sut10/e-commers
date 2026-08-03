@@ -199,6 +199,65 @@ class CategoryController extends Controller{
         }
     }
 
+    public function destroy(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $id = filter_var(
+            $input['id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        if (!$id) {
+            Session::flash(
+                'warning',
+                'La categoría indicada no es válida.'
+            );
+
+            redirect('categorias');
+        }
+
+        $category = Category::find($id);
+
+        if (!$category) {
+            Session::flash(
+                'warning',
+                'La categoría que intentas eliminar no existe.'
+            );
+
+            redirect('categorias');
+        }
+
+        try {
+            if (!$category->delete()) {
+                throw new RuntimeException(
+                    'El modelo no pudo eliminar la categoría.'
+                );
+            }
+
+            Session::flash(
+                'success',
+                'La categoría fue eliminada correctamente.'
+            );
+
+            redirect('categorias');
+        } catch (Throwable $exception) {
+            error_log($exception->getMessage());
+
+            Session::flash(
+                'warning',
+                'No fue posible eliminar la categoría.'
+            );
+
+            redirect('categorias');
+        }
+    }
+
     public function store(): void{
         $request = new Request();
         $input = $request->all();

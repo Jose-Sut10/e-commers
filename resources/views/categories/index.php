@@ -44,6 +44,7 @@
                 <th>Slug</th>
                 <th>Estado</th>
                 <th>Fecha de registro</th>
+                <th>Acciones</th>
             </tr>
         </thead>
 
@@ -83,6 +84,41 @@
                             ENT_QUOTES,
                             'UTF-8'
                         ) ?>
+                    </td>
+
+                    <td>
+                        <a href="<?= htmlspecialchars(
+                            url(
+                                'categorias/editar?id='
+                                . (int) $category->id
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>">
+                            Editar
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="<?= htmlspecialchars(
+                                url('categorias/eliminar'),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            onsubmit="return confirm(
+                                '¿Estás seguro de eliminar esta categoría?'
+                            );"
+                            style="display: inline;"
+                        >
+                            <?= csrf_field() ?>
+
+                            <input
+                                type="hidden"
+                                name="id"
+                                value="<?= (int) $category->id ?>">
+
+                            <button type="submit">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
