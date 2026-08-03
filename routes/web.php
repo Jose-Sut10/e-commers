@@ -65,3 +65,14 @@ $router->post('/usuarios', [
     UserController::class,
     'store'
 ]);
+
+//editar usuarios
+$router->get('/usuarios/editar', [
+    UserController::class,
+    'edit'
+]);
+
+$router->post('/usuarios/actualizar', [
+    UserController::class,
+    'update'
+]);

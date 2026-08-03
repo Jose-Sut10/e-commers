@@ -28,4 +28,14 @@ class User extends Model{
     public function isAdmin(): bool{
         return $this->role === 'admin';
     }
+
+    public static function countActiveAdmins(): int{
+        $row = Database::first(
+            "SELECT COUNT(*) AS total
+            FROM `users`
+            WHERE `role` = 'admin'
+            AND `active` = 1"
+        );
+        return (int) ($row['total'] ?? 0);
+    }
 }
