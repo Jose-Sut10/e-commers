@@ -99,3 +99,19 @@ $router->post('/categorias', [
     CategoryController::class,
     'store'
 ]);
+
+//administración completa de categorías 
+$router->get('/categorias/editar', [
+    CategoryController::class,
+    'edit'
+]);
+
+$router->post('/categorias/actualizar', [
+    CategoryController::class,
+    'update'
+]);
+
+$router->post('/categorias/eliminar', [
+    CategoryController::class,
+    'destroy'
+]);
