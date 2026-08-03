@@ -1,5 +1,16 @@
 <h1>Usuarios</h1>
 <?php $success = session('success'); ?>
+<?php $warning = session('warning'); ?>
+
+<?php if ($warning): ?>
+    <div class="alert alert-warning">
+        <?= htmlspecialchars(
+            (string) $warning,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+<?php endif; ?>
 
 <?php if ($success): ?>
     <div class="alert alert-success">
@@ -36,6 +47,7 @@
                 <th>Rol</th>
                 <th>Estado</th>
                 <th>Fecha de registro</th>
+                <th>Acciones</th>
             </tr>
         </thead>
 
@@ -82,6 +94,18 @@
                             ENT_QUOTES,
                             'UTF-8'
                         ) ?>
+                    </td>
+                    <td>
+                        <a href="<?= htmlspecialchars(
+                            url(
+                                'usuarios/editar?id='
+                                . (int) $user->id
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>">
+                            Editar
+                        </a>
                     </td>
                 </tr>
             <?php endforeach; ?>
