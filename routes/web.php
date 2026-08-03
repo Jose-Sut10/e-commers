@@ -3,6 +3,7 @@ use App\Controllers\HomeController;
 use App\Controllers\CompanyController;
 use App\Controllers\AuthController;
 use App\Controllers\UserController;
+use App\Controllers\CategoryController;
 
 $router->get('/', [
     HomeController::class,
@@ -81,4 +82,20 @@ $router->post('/usuarios/actualizar', [
 $router->post('/usuarios/eliminar', [
     UserController::class,
     'destroy'
+]);
+
+//agregando categorías
+$router->get('/categorias', [
+    CategoryController::class,
+    'index'
+]);
+
+$router->get('/categorias/crear', [
+    CategoryController::class,
+    'create'
+]);
+
+$router->post('/categorias', [
+    CategoryController::class,
+    'store'
 ]);

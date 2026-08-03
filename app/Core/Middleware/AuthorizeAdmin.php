@@ -6,6 +6,7 @@ use Core\Request;
 class AuthorizeAdmin implements Middleware{
     protected array $protectedRoutes = [
         '/usuarios',
+        '/categorias',
     ];
 
     public function handle(Request $request): void{

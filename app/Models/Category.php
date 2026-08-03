@@ -6,7 +6,9 @@ use Core\Database;
 class Category extends Model{
     protected string $table = 'categories';
 
-    public static function findBySlug(string $slug): ?static{
+    public static function findBySlug(
+        string $slug
+    ): ?static {
         $instance = new static();
 
         $row = Database::first(
