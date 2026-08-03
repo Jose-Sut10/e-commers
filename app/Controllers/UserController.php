@@ -5,8 +5,8 @@ use RuntimeException;
 use Core\Controller;
 use Core\Request;
 use Core\Session;
-use App\Models\User;
 use Core\Auth\Auth;
+use App\Models\User;
 
 class UserController extends Controller{
     public function edit(): void{
@@ -438,6 +438,91 @@ class UserController extends Controller{
                     : '0',
             ]);
             redirect('usuarios/crear');
+        }
+    }
+
+    //eliminar usuario
+    public function destroy(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $id = filter_var(
+            $input['id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        if (!$id) {
+            Session::flash(
+                'warning',
+                'El usuario indicado no es válido.'
+            );
+            redirect('usuarios');
+        }
+
+        $user = User::find($id);
+
+        if (!$user) {
+            Session::flash(
+                'warning',
+                'El usuario que intentas eliminar no existe.'
+            );
+            redirect('usuarios');
+        }
+
+        /*
+        * Impedir que el administrador conectado
+        * elimine su propia cuenta.
+        */
+        if (Auth::id() === (int) $user->id) {
+            Session::flash(
+                'warning',
+                'No puedes eliminar tu propia cuenta.'
+            );
+            redirect('usuarios');
+        }
+
+        /*
+        * Impedir que se elimine al último
+        * administrador activo.
+        */
+        if (
+            $user->isAdmin()
+            && (bool) $user->active
+            && User::countActiveAdmins() <= 1
+        ) {
+            Session::flash(
+                'warning',
+                'No puedes eliminar al último administrador activo.'
+            );
+            redirect('usuarios');
+        }
+
+        try {
+            if (!$user->delete()) {
+                throw new RuntimeException(
+                    'El modelo no pudo eliminar el usuario.'
+                );
+            }
+
+            Session::flash(
+                'success',
+                'El usuario fue eliminado correctamente.'
+            );
+
+            redirect('usuarios');
+        } catch (Throwable $exception) {
+            error_log($exception->getMessage());
+
+            Session::flash(
+                'warning',
+                'No fue posible eliminar el usuario.'
+            );
+            redirect('usuarios');
         }
     }
 }

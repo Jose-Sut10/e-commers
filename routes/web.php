@@ -76,3 +76,9 @@ $router->post('/usuarios/actualizar', [
     UserController::class,
     'update'
 ]);
+
+//eliminar usuarios
+$router->post('/usuarios/eliminar', [
+    UserController::class,
+    'destroy'
+]);

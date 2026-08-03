@@ -2,6 +2,11 @@
 <?php $success = session('success'); ?>
 <?php $warning = session('warning'); ?>
 
+<?php
+use Core\Auth\Auth;
+$currentUserId = Auth::id();
+?>
+
 <?php if ($warning): ?>
     <div class="alert alert-warning">
         <?= htmlspecialchars(
@@ -33,9 +38,7 @@
 </div>
 
 <?php if (empty($users)): ?>
-
     <p>No hay usuarios registrados.</p>
-
 <?php else: ?>
 
     <table>
@@ -54,9 +57,7 @@
         <tbody>
             <?php foreach ($users as $user): ?>
                 <tr>
-                    <td>
-                        <?= (int) $user->id ?>
-                    </td>
+                    <td><?= (int) $user->id ?></td>
 
                     <td>
                         <?= htmlspecialchars(
@@ -106,8 +107,30 @@
                         ) ?>">
                             Editar
                         </a>
+
+                        <form
+                            method="POST"
+                            action="<?= htmlspecialchars(
+                                url('usuarios/eliminar'),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            onsubmit="return confirm(
+                                '¿Estás seguro de eliminar este usuario?'
+                            );"
+                            style="display: inline;">
+                            <?= csrf_field() ?>
+
+                            <input
+                                type="hidden"
+                                name="id"
+                                value="<?= (int) $user->id ?>">
+
+                            <button type="submit">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
+
             <?php endforeach; ?>
         </tbody>
     </table>
