@@ -114,6 +114,22 @@ abstract class Model{
         return $result;
     }
 
+    public static function all(): array{
+        $instance = new static();
+
+        $sql = sprintf(
+            'SELECT * FROM `%s` ORDER BY `%s` ASC',
+            $instance->table,
+            $instance->primaryKey
+        );
+        $rows = Database::select($sql);
+        return array_map(
+            fn (array $row) =>
+                $instance->newFromDatabase($row),
+            $rows
+        );
+    }
+
     public static function find(mixed $id): ?static{
         $instance = new static();
 

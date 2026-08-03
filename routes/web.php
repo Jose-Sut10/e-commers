@@ -2,6 +2,7 @@
 use App\Controllers\HomeController;
 use App\Controllers\CompanyController;
 use App\Controllers\AuthController;
+use App\Controllers\UserController;
 
 $router->get('/', [
     HomeController::class,
@@ -47,4 +48,20 @@ $router->post('/login', [
 $router->post('/logout', [
     AuthController::class,
     'logout'
+]);
+
+//modulo de usuarios
+$router->get('/usuarios', [
+    UserController::class,
+    'index'
+]);
+
+$router->get('/usuarios/crear', [
+    UserController::class,
+    'create'
+]);
+
+$router->post('/usuarios', [
+    UserController::class,
+    'store'
 ]);
