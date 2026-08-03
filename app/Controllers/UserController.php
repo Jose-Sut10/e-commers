@@ -46,8 +46,7 @@ class UserController extends Controller{
         ]);
     }
     
-    public function update(): void
-    {
+    public function update(): void{
         $request = new Request();
         $input = $request->all();
 
@@ -275,8 +274,7 @@ class UserController extends Controller{
         }
     }
 
-    public function index(): void
-    {
+    public function index(): void{
         $users = User::all();
 
         view('users/index', [
