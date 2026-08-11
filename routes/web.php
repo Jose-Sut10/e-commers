@@ -4,6 +4,7 @@ use App\Controllers\CompanyController;
 use App\Controllers\AuthController;
 use App\Controllers\UserController;
 use App\Controllers\CategoryController;
+use App\Controllers\ProductController;
 
 $router->get('/', [
     HomeController::class,
@@ -114,4 +115,20 @@ $router->post('/categorias/actualizar', [
 $router->post('/categorias/eliminar', [
     CategoryController::class,
     'destroy'
+]);
+
+//registro y listado de productos
+$router->get('/productos', [
+    ProductController::class,
+    'index'
+]);
+
+$router->get('/productos/crear', [
+    ProductController::class,
+    'create'
+]);
+
+$router->post('/productos', [
+    ProductController::class,
+    'store'
 ]);

@@ -7,6 +7,7 @@ class AuthorizeAdmin implements Middleware{
     protected array $protectedRoutes = [
         '/usuarios',
         '/categorias',
+        '/productos',
     ];
 
     public function handle(Request $request): void{
