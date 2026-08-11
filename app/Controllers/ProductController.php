@@ -534,4 +534,64 @@ class ProductController extends Controller{
             );
         }
     }
+
+    //eliminar producto
+    public function destroy(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $id = filter_var(
+            $input['id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        if (!$id) {
+            Session::flash(
+                'warning',
+                'El producto indicado no es válido.'
+            );
+
+            redirect('productos');
+        }
+
+        $product = Product::find($id);
+
+        if (!$product) {
+            Session::flash(
+                'warning',
+                'El producto que intentas eliminar no existe.'
+            );
+
+            redirect('productos');
+        }
+
+        try {
+            if (!$product->delete()) {
+                throw new RuntimeException(
+                    'El modelo no pudo eliminar el producto.'
+                );
+            }
+
+            Session::flash(
+                'success',
+                'El producto fue eliminado correctamente.'
+            );
+
+            redirect('productos');
+        } catch (Throwable $exception) {
+            error_log($exception->getMessage());
+
+            Session::flash(
+                'warning',
+                'No fue posible eliminar el producto.'
+            );
+
+            redirect('productos');
+        }
+    }
 }
