@@ -1,5 +1,7 @@
-<?php $success = session('success'); ?>
-<?php $warning = session('warning'); ?>
+<?php
+$success = session('success');
+$warning = session('warning');
+?>
 
 <?php if ($success): ?>
     <div class="alert alert-success">
@@ -21,7 +23,9 @@
     </div>
 <?php endif; ?>
 
+
 <h1>Editar producto</h1>
+
 
 <?php if (error('general')): ?>
     <div class="alert alert-error">
@@ -32,6 +36,11 @@
         ) ?>
     </div>
 <?php endif; ?>
+
+
+<!-- =====================================================
+     FORMULARIO DE INFORMACIÓN DEL PRODUCTO
+===================================================== -->
 
 <form
     method="POST"
@@ -49,23 +58,31 @@
         value="<?= (int) $product->id ?>"
     >
 
+
+    <!-- Categoría -->
+
     <div>
         <label for="category_id">
             Categoría
         </label>
 
+        <?php
+        $selectedCategory = old(
+            'category_id',
+            (string) $product->category_id
+        );
+        ?>
+
         <select
             id="category_id"
             name="category_id"
         >
-            <?php
-            $selectedCategory = old(
-                'category_id',
-                (string) $product->category_id
-            );
-            ?>
+            <option value="">
+                Selecciona una categoría
+            </option>
 
             <?php foreach ($categories as $category): ?>
+
                 <option
                     value="<?= (int) $category->id ?>"
                     <?= (string) $selectedCategory
@@ -85,6 +102,7 @@
                         : ''
                     ?>
                 </option>
+
             <?php endforeach; ?>
         </select>
 
@@ -98,6 +116,9 @@
             </small>
         <?php endif; ?>
     </div>
+
+
+    <!-- Nombre -->
 
     <div>
         <label for="name">
@@ -117,7 +138,20 @@
                 'UTF-8'
             ) ?>"
         >
+
+        <?php if (error('name')): ?>
+            <small class="form-error">
+                <?= htmlspecialchars(
+                    (string) error('name'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </small>
+        <?php endif; ?>
     </div>
+
+
+    <!-- SKU -->
 
     <div>
         <label for="sku">
@@ -137,7 +171,20 @@
                 'UTF-8'
             ) ?>"
         >
+
+        <?php if (error('sku')): ?>
+            <small class="form-error">
+                <?= htmlspecialchars(
+                    (string) error('sku'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </small>
+        <?php endif; ?>
     </div>
+
+
+    <!-- Descripción -->
 
     <div>
         <label for="description">
@@ -156,7 +203,19 @@
             ENT_QUOTES,
             'UTF-8'
         ) ?></textarea>
+
+        <?php if (error('description')): ?>
+            <small class="form-error">
+                <?= htmlspecialchars(
+                    (string) error('description'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </small>
+        <?php endif; ?>
     </div>
+
+    <!-- Precio -->
 
     <div>
         <label for="price">
@@ -178,7 +237,19 @@
                 'UTF-8'
             ) ?>"
         >
+
+        <?php if (error('price')): ?>
+            <small class="form-error">
+                <?= htmlspecialchars(
+                    (string) error('price'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </small>
+        <?php endif; ?>
     </div>
+
+    <!-- Costo -->
 
     <div>
         <label for="cost">
@@ -200,29 +271,20 @@
                 'UTF-8'
             ) ?>"
         >
+
+        <?php if (error('cost')): ?>
+            <small class="form-error">
+                <?= htmlspecialchars(
+                    (string) error('cost'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </small>
+        <?php endif; ?>
     </div>
 
-    <div>
-        <label for="stock">
-            Existencias
-        </label>
 
-        <input
-            id="stock"
-            type="number"
-            name="stock"
-            min="0"
-            step="1"
-            value="<?= htmlspecialchars(
-                (string) old(
-                    'stock',
-                    $product->stock
-                ),
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>"
-        >
-    </div>
+    <!-- Estado -->
 
     <?php
     $activeValue = old(
@@ -249,55 +311,117 @@
         </label>
     </div>
 
-    <hr>
 
-    <h2>Imágenes del producto</h2>
+    <!-- Acciones -->
 
-    <form
-        method="POST"
-        enctype="multipart/form-data"
-        action="<?= htmlspecialchars(
-            url('productos/imagen'),
+    <div>
+        <button type="submit">
+            Guardar cambios
+        </button>
+
+        <a href="<?= htmlspecialchars(
+            url('productos'),
             ENT_QUOTES,
             'UTF-8'
-        ) ?>"
+        ) ?>">
+            Cancelar
+        </a>
+    </div>
+
+</form>
+
+
+<!-- =====================================================
+     INVENTARIO
+===================================================== -->
+
+<hr>
+
+<h2>Inventario</h2>
+
+<p>
+    Existencias actuales:
+    <strong>
+        <?= (int) $product->stock ?>
+    </strong>
+</p>
+
+<a href="<?= htmlspecialchars(
+    url(
+        'inventario?id='
+        . (int) $product->id
+    ),
+    ENT_QUOTES,
+    'UTF-8'
+) ?>">
+    Administrar inventario
+</a>
+
+
+<!-- =====================================================
+     SUBIR IMAGEN
+===================================================== -->
+
+<hr>
+
+<h2>Imágenes del producto</h2>
+
+<form
+    method="POST"
+    enctype="multipart/form-data"
+    action="<?= htmlspecialchars(
+        url('productos/imagen'),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>"
+>
+    <?= csrf_field() ?>
+
+    <input
+        type="hidden"
+        name="product_id"
+        value="<?= (int) $product->id ?>"
     >
-        <?= csrf_field() ?>
+
+    <div>
+        <label for="image">
+            Seleccionar imagen
+        </label>
 
         <input
-            type="hidden"
-            name="product_id"
-            value="<?= (int) $product->id ?>"
+            id="image"
+            type="file"
+            name="image"
+            accept="image/jpeg,image/png,image/webp"
+            required
         >
+    </div>
 
-        <div>
-            <label for="image">
-                Seleccionar imagen
-            </label>
+    <p>JPG, PNG o WebP. Máximo 5 MB.</p>
 
-            <input
-                id="image"
-                type="file"
-                name="image"
-                accept="image/jpeg,image/png,image/webp"
-                required
-            >
-        </div>
+    <button type="submit">
+        Subir imagen
+    </button>
+</form>
 
-        <p>JPG, PNG o WebP. Máximo 5 MB</p>
 
-        <button type="submit">Subir imagen</button>
-    </form>
+<!-- =====================================================
+     GALERÍA DE IMÁGENES
+===================================================== -->
 
-    <?php if (!empty($images)): ?>
+<?php if (!empty($images)): ?>
 
     <div class="product-images">
+
         <?php foreach ($images as $image): ?>
+
             <div class="product-image">
 
                 <img
                     src="<?= htmlspecialchars(
-                        asset($image->path),
+                        asset(
+                            (string) $image->path
+                        ),
                         ENT_QUOTES,
                         'UTF-8'
                     ) ?>"
@@ -309,11 +433,13 @@
                     width="180"
                 >
 
-                <?php if ($image->is_primary): ?>
-                    <strong>
-                        Imagen principal
-                    </strong>
+                <?php if ((bool) $image->is_primary): ?>
+
+                    <p><strong>Imagen principal</strong></p>
+
                 <?php else: ?>
+
+                    <!-- Hacer principal -->
 
                     <form
                         method="POST"
@@ -340,6 +466,8 @@
 
                 <?php endif; ?>
 
+                <!-- Eliminar imagen -->
+
                 <form
                     method="POST"
                     action="<?= htmlspecialchars(
@@ -350,7 +478,7 @@
                         'UTF-8'
                     ) ?>"
                     onsubmit="return confirm(
-                        '¿Eliminar esta imagen?'
+                        '¿Estás seguro de eliminar esta imagen?'
                     );"
                 >
                     <?= csrf_field() ?>
@@ -372,19 +500,6 @@
 
     </div>
 
-    <?php else: ?>
-        <p>Este producto todavía no tiene imágenes.</p>
-    <?php endif; ?>
-
-    <button type="submit">
-        Guardar cambios
-    </button>
-
-    <a href="<?= htmlspecialchars(
-        url('productos'),
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>">
-        Cancelar
-    </a>
-</form>
+<?php else: ?>
+    <p>Este producto todavía no tiene imágenes.</p>
+<?php endif; ?>
