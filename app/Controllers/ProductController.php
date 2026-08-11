@@ -9,6 +9,8 @@ use Core\Session;
 use App\Models\Product;
 use App\Models\Category;
 use App\Support\Str;
+use App\Models\ProductImage;
+use App\Services\ImageUploadService;
 
 class ProductController extends Controller{
     public function index(): void{
@@ -266,7 +268,274 @@ class ProductController extends Controller{
             'title' => 'Editar producto',
             'product' => $product,
             'categories' => Category::all(),
+
+            'images' =>
+                ProductImage::forProduct(
+                    (int) $product->id
+                ),
         ]);
+    }
+
+    //cargar imagen de producto
+    public function uploadImage(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $productId = filter_var(
+            $input['product_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        if (!$productId) {
+            Session::flash(
+                'warning',
+                'El producto indicado no es válido.'
+            );
+
+            redirect('productos');
+        }
+
+        $product = Product::find(
+            $productId
+        );
+
+        if (!$product) {
+            Session::flash(
+                'warning',
+                'El producto no existe.'
+            );
+
+            redirect('productos');
+        }
+
+        $file = $_FILES['image'] ?? null;
+
+        if (!is_array($file)) {
+            Session::flash(
+                'warning',
+                'Debes seleccionar una imagen.'
+            );
+
+            redirect(
+                'productos/editar?id='
+                . (int) $product->id
+            );
+        }
+
+        try {
+            $uploader =
+                new ImageUploadService();
+
+            $uploaded =
+                $uploader->store(
+                    $file,
+                    'products'
+                );
+
+            $existingImages =
+                ProductImage::forProduct(
+                    (int) $product->id
+                );
+
+            $image = new ProductImage([
+                'product_id' =>
+                    (int) $product->id,
+
+                'path' =>
+                    $uploaded['path'],
+
+                'original_name' =>
+                    $uploaded['original_name'],
+
+                'mime_type' =>
+                    $uploaded['mime_type'],
+
+                'size' =>
+                    $uploaded['size'],
+
+                /*
+                * La primera imagen se convierte
+                * automáticamente en principal.
+                */
+                'is_primary' =>
+                    empty($existingImages)
+                        ? 1
+                        : 0,
+            ]);
+
+            if (!$image->save()) {
+                $uploader->delete(
+                    $uploaded['path']
+                );
+
+                throw new RuntimeException(
+                    'No fue posible registrar la imagen.'
+                );
+            }
+
+            Session::flash(
+                'success',
+                'La imagen fue agregada correctamente.'
+            );
+        } catch (Throwable $exception) {
+            error_log(
+                $exception->getMessage()
+            );
+
+            Session::flash(
+                'warning',
+                $exception->getMessage()
+            );
+        }
+
+        redirect(
+            'productos/editar?id='
+            . (int) $product->id
+        );
+    }
+
+    public function setPrimaryImage(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $imageId = filter_var(
+            $input['image_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        if (!$imageId) {
+            redirect('productos');
+        }
+
+        $image = ProductImage::find(
+            $imageId
+        );
+
+        if (!$image) {
+            Session::flash(
+                'warning',
+                'La imagen no existe.'
+            );
+
+            redirect('productos');
+        }
+
+        ProductImage::clearPrimary(
+            (int) $image->product_id
+        );
+
+        $image->is_primary = 1;
+        $image->save();
+
+        Session::flash(
+            'success',
+            'Imagen principal actualizada.'
+        );
+
+        redirect(
+            'productos/editar?id='
+            . (int) $image->product_id
+        );
+    }
+
+    //eliminar imagen
+    public function deleteImage(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $imageId = filter_var(
+            $input['image_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        if (!$imageId) {
+            redirect('productos');
+        }
+
+        $image = ProductImage::find(
+            $imageId
+        );
+
+        if (!$image) {
+            Session::flash(
+                'warning',
+                'La imagen no existe.'
+            );
+
+            redirect('productos');
+        }
+
+        $productId =
+            (int) $image->product_id;
+
+        $wasPrimary =
+            (bool) $image->is_primary;
+
+        try {
+            $uploader =
+                new ImageUploadService();
+
+            $path =
+                (string) $image->path;
+
+            if (!$image->delete()) {
+                throw new RuntimeException(
+                    'No fue posible eliminar la imagen.'
+                );
+            }
+
+            $uploader->delete($path);
+
+            /*
+            * Si eliminamos la imagen principal,
+            * convertimos otra en principal.
+            */
+            if ($wasPrimary) {
+                $remaining =
+                    ProductImage::forProduct(
+                        $productId
+                    );
+
+                if (!empty($remaining)) {
+                    $remaining[0]->is_primary = 1;
+                    $remaining[0]->save();
+                }
+            }
+
+            Session::flash(
+                'success',
+                'La imagen fue eliminada.'
+            );
+        } catch (Throwable $exception) {
+            error_log(
+                $exception->getMessage()
+            );
+
+            Session::flash(
+                'warning',
+                'No fue posible eliminar la imagen.'
+            );
+        }
+
+        redirect(
+            'productos/editar?id='
+            . $productId
+        );
     }
 
     //actualizar producto
