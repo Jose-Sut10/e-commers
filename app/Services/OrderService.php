@@ -6,6 +6,7 @@ use Core\Database;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use Core\Auth\Auth;
 
 class OrderService{
     public function create(
@@ -201,8 +202,7 @@ class OrderService{
         }
     }
 
-    private function generateNumber(): string
-    {
+    private function generateNumber(): string{
         return sprintf(
             'ORD-%s-%s',
             date('Ymd'),
@@ -212,5 +212,93 @@ class OrderService{
                 )
             )
         );
+    }
+
+    //administración de pedidos
+    public function changeStatus(
+    int $orderId,
+    string $newStatus
+    ): Order {
+        Database::beginTransaction();
+
+        try {
+            $order = Order::findForUpdate(
+                $orderId
+            );
+
+            if (!$order) {
+                throw new RuntimeException(
+                    'El pedido no fue encontrado.'
+                );
+            }
+
+            $allowed =
+                $order->allowedTransitions();
+
+            if (!in_array(
+                $newStatus,
+                $allowed,
+                true
+            )) {
+                throw new RuntimeException(
+                    'El cambio de estado solicitado no está permitido.'
+                );
+            }
+
+            /*
+            * Si se cancela, devolvemos todo
+            * el inventario correspondiente.
+            */
+            if ($newStatus === 'cancelled') {
+                $items =
+                    OrderItem::forOrder(
+                        (int) $order->id
+                    );
+
+                $inventory =
+                    new InventoryService();
+
+                foreach ($items as $item) {
+                    $product =
+                        Product::find(
+                            (int) $item->product_id
+                        );
+
+                    if (!$product) {
+                        throw new RuntimeException(
+                            "No se encontró el producto {$item->product_name}."
+                        );
+                    }
+
+                    $inventory->add(
+                        $product,
+                        (int) $item->quantity,
+                        Auth::id(),
+                        "Cancelación del pedido {$order->number}"
+                    );
+                }
+            }
+
+            $order->status =
+                $newStatus;
+
+            if (!$order->save()) {
+                throw new RuntimeException(
+                    'No fue posible actualizar el estado del pedido.'
+                );
+            }
+
+            Database::commit();
+
+            return $order;
+
+        } catch (Throwable $exception) {
+
+            if (Database::inTransaction()) {
+                Database::rollBack();
+            }
+
+            throw $exception;
+        }
     }
 }
