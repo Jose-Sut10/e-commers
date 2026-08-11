@@ -9,6 +9,7 @@ use App\Controllers\InventoryController;
 use App\Controllers\ShopController;
 use App\Controllers\CartController; 
 use App\Controllers\CheckoutController;
+use App\Controllers\OrderController;
 
 $router->get('/', [
     HomeController::class,
@@ -231,4 +232,20 @@ $router->post('/checkout', [
 $router->get('/pedido-confirmado', [
     CheckoutController::class,
     'success'
+]);
+
+//administración de pedidos
+$router->get('/pedidos', [
+    OrderController::class,
+    'index'
+]);
+
+$router->get('/pedidos/ver', [
+    OrderController::class,
+    'show'
+]);
+
+$router->post('/pedidos/estado', [
+    OrderController::class,
+    'updateStatus'
 ]);

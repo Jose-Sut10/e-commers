@@ -9,6 +9,7 @@ class AuthorizeAdmin implements Middleware{
         '/categorias',
         '/productos',
         '/inventario',
+        '/pedidos',
     ];
 
     public function handle(Request $request): void{
