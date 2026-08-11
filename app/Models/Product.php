@@ -52,11 +52,24 @@ class Product extends Model{
         $rows = Database::select(
             "SELECT
                 products.*,
-                categories.name AS category_name
-             FROM `products`
-             INNER JOIN `categories`
+                categories.name AS category_name,
+
+                (
+                    SELECT product_images.path
+                    FROM product_images
+                    WHERE product_images.product_id = products.id
+                    ORDER BY
+                        product_images.is_primary DESC,
+                        product_images.id ASC
+                    LIMIT 1
+                ) AS image_path
+
+            FROM products
+
+            INNER JOIN categories
                 ON categories.id = products.category_id
-             ORDER BY products.id DESC"
+
+            ORDER BY products.id DESC"
         );
 
         return array_map(

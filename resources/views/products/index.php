@@ -41,6 +41,7 @@
             <tr>
                 <th>ID</th>
                 <th>Producto</th>
+                <th>Imagen</th>
                 <th>SKU</th>
                 <th>Categoría</th>
                 <th>Precio</th>
@@ -63,6 +64,32 @@
                             ENT_QUOTES,
                             'UTF-8'
                         ) ?>
+                    </td>
+
+                    <td>
+                        <?php if ($product->image_path): ?>
+
+                            <img
+                                src="<?= htmlspecialchars(
+                                    asset($product->image_path),
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>"
+                                alt="<?= htmlspecialchars(
+                                    (string) $product->name,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>"
+                                width="70"
+                                height="70"
+                                style="object-fit: cover;"
+                            >
+
+                        <?php else: ?>
+
+                            <span>Sin imagen</span>
+
+                        <?php endif; ?>
                     </td>
 
                     <td>

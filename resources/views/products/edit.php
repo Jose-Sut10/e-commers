@@ -1,3 +1,26 @@
+<?php $success = session('success'); ?>
+<?php $warning = session('warning'); ?>
+
+<?php if ($success): ?>
+    <div class="alert alert-success">
+        <?= htmlspecialchars(
+            (string) $success,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($warning): ?>
+    <div class="alert alert-warning">
+        <?= htmlspecialchars(
+            (string) $warning,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+<?php endif; ?>
+
 <h1>Editar producto</h1>
 
 <?php if (error('general')): ?>
@@ -274,11 +297,15 @@
 
                 <img
                     src="<?= htmlspecialchars(
-                        url('../' . $image->path),
+                        asset($image->path),
                         ENT_QUOTES,
                         'UTF-8'
                     ) ?>"
-                    alt=""
+                    alt="<?= htmlspecialchars(
+                        (string) $product->name,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"
                     width="180"
                 >
 

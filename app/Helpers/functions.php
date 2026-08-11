@@ -145,3 +145,19 @@ if (!function_exists('csrf_field')) {
         return Csrf::field();
     }
 }
+
+//miniaturas de imagenes
+if (!function_exists('asset')) {
+    function asset(string $path = ''): string{
+        $baseUrl = rtrim(
+            config('app.asset_url', ''),
+            '/'
+        );
+
+        $path = ltrim($path, '/');
+
+        return $path === ''
+            ? $baseUrl
+            : "{$baseUrl}/{$path}";
+    }
+}
