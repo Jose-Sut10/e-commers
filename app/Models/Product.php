@@ -179,4 +179,44 @@ class Product extends Model{
             $row
         );
     }
+
+    //carrito de compras
+    public static function findPublicById(int $id): ?static {
+        $instance = new static();
+
+        $row = Database::first(
+            "
+            SELECT
+                products.*,
+                categories.name AS category_name,
+
+                (
+                    SELECT product_images.path
+                    FROM product_images
+                    WHERE product_images.product_id = products.id
+                    ORDER BY
+                        product_images.is_primary DESC,
+                        product_images.id ASC
+                    LIMIT 1
+                ) AS image_path
+
+            FROM products
+
+            INNER JOIN categories
+                ON categories.id = products.category_id
+
+            WHERE products.id = ?
+            AND products.active = 1
+            AND categories.active = 1
+
+            LIMIT 1
+            ",
+            [$id]
+        );
+
+        if (!$row) {
+            return null;
+        }
+        return $instance->newFromDatabase($row);
+    }
 }
