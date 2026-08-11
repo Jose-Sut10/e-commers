@@ -8,6 +8,7 @@ use App\Controllers\ProductController;
 use App\Controllers\InventoryController;
 use App\Controllers\ShopController;
 use App\Controllers\CartController; 
+use App\Controllers\CheckoutController;
 
 $router->get('/', [
     HomeController::class,
@@ -214,4 +215,20 @@ $router->post('/carrito/eliminar', [
 $router->post('/carrito/vaciar', [
     CartController::class,
     'clear'
+]);
+
+//checkout y pedidos
+$router->get('/checkout', [
+    CheckoutController::class,
+    'index'
+]);
+
+$router->post('/checkout', [
+    CheckoutController::class,
+    'store'
+]);
+
+$router->get('/pedido-confirmado', [
+    CheckoutController::class,
+    'success'
 ]);
