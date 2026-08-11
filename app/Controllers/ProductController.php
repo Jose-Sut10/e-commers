@@ -57,16 +57,6 @@ class ProductController extends Controller{
             ]
         );
 
-        $stock = filter_var(
-            $input['stock'] ?? null,
-            FILTER_VALIDATE_INT,
-            [
-                'options' => [
-                    'min_range' => 0,
-                ],
-            ]
-        );
-
         $result = validator($input, [
             'category_id' => 'required|numeric',
             'name'        => 'required|min:2|max:150',
@@ -74,7 +64,6 @@ class ProductController extends Controller{
             'description' => 'max:5000',
             'price'       => 'required|numeric|min:0',
             'cost'        => 'numeric|min:0',
-            'stock'       => 'required|numeric|min:0',
         ])->validate();
 
         if ($slug === '') {
@@ -101,13 +90,6 @@ class ProductController extends Controller{
                     'La categoría seleccionada no está disponible.'
                 );
             }
-        }
-
-        if ($stock === false) {
-            $result->add(
-                'stock',
-                'Las existencias deben ser un número entero igual o mayor que cero.'
-            );
         }
 
         if (
@@ -346,16 +328,6 @@ class ProductController extends Controller{
             ]
         );
 
-        $stock = filter_var(
-            $input['stock'] ?? null,
-            FILTER_VALIDATE_INT,
-            [
-                'options' => [
-                    'min_range' => 0,
-                ],
-            ]
-        );
-
         $result = validator($input, [
             'category_id' => 'required|numeric',
             'name'        => 'required|min:2|max:150',
@@ -383,16 +355,6 @@ class ProductController extends Controller{
                     'La categoría seleccionada no existe.'
                 );
             }
-        }
-
-        /*
-        * Stock entero
-        */
-        if ($stock === false) {
-            $result->add(
-                'stock',
-                'Las existencias deben ser un número entero igual o mayor que cero.'
-            );
         }
 
         /*
@@ -498,9 +460,6 @@ class ProductController extends Controller{
                 $cost === ''
                     ? null
                     : (float) $cost;
-
-            $product->stock =
-                (int) $stock;
 
             $product->active =
                 isset($input['active'])

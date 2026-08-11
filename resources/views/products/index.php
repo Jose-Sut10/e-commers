@@ -44,7 +44,6 @@
                 <th>SKU</th>
                 <th>Categoría</th>
                 <th>Precio</th>
-                <th>Existencias</th>
                 <th>Estado</th>
                 <th>Registro</th>
                 <th>Acciones</th>
@@ -109,6 +108,18 @@
                     </td>
 
                     <td>
+
+                        <a href="<?= htmlspecialchars(
+                                url(
+                                    'inventario?id='
+                                    . (int) $product->id
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>">
+                                Inventario
+                        </a>
+
                         <a href="<?= htmlspecialchars(
                             url(
                                 'productos/editar?id='
