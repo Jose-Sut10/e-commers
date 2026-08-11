@@ -47,6 +47,7 @@
                 <th>Existencias</th>
                 <th>Estado</th>
                 <th>Registro</th>
+                <th>Acciones</th>
             </tr>
         </thead>
 
@@ -105,6 +106,44 @@
                             ENT_QUOTES,
                             'UTF-8'
                         ) ?>
+                    </td>
+
+                    <td>
+                        <a href="<?= htmlspecialchars(
+                            url(
+                                'productos/editar?id='
+                                . (int) $product->id
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>">
+                            Editar
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="<?= htmlspecialchars(
+                                url('productos/eliminar'),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            onsubmit="return confirm(
+                                '¿Estás seguro de eliminar este producto?'
+                            );"
+                            style="display:inline;"
+                        >
+                            <?= csrf_field() ?>
+
+                            <input
+                                type="hidden"
+                                name="id"
+                                value="<?= (int) $product->id ?>"
+                            >
+
+                            <button type="submit">
+                                Eliminar
+                            </button>
+                        </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
