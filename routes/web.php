@@ -5,6 +5,7 @@ use App\Controllers\AuthController;
 use App\Controllers\UserController;
 use App\Controllers\CategoryController;
 use App\Controllers\ProductController;
+use App\Controllers\InventoryController;
 
 $router->get('/', [
     HomeController::class,
@@ -147,4 +148,15 @@ $router->post('/productos/actualizar', [
 $router->post('/productos/eliminar', [
     ProductController::class,
     'destroy'
+]);
+
+//control de inventario
+$router->get('/inventario', [
+    InventoryController::class,
+    'show'
+]);
+
+$router->post('/inventario/movimiento', [
+    InventoryController::class,
+    'store'
 ]);
