@@ -7,6 +7,7 @@ use App\Controllers\CategoryController;
 use App\Controllers\ProductController;
 use App\Controllers\InventoryController;
 use App\Controllers\ShopController;
+use App\Controllers\CartController; 
 
 $router->get('/', [
     HomeController::class,
@@ -187,4 +188,30 @@ $router->get('/tienda', [
 $router->get('/producto', [
     ShopController::class,
     'show'
+]);
+
+//carrito de compras
+$router->get('/carrito', [
+    CartController::class,
+    'index'
+]);
+
+$router->post('/carrito/agregar', [
+    CartController::class,
+    'add'
+]);
+
+$router->post('/carrito/actualizar', [
+    CartController::class,
+    'update'
+]);
+
+$router->post('/carrito/eliminar', [
+    CartController::class,
+    'remove'
+]);
+
+$router->post('/carrito/vaciar', [
+    CartController::class,
+    'clear'
 ]);

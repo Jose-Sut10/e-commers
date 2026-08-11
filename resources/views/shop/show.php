@@ -1,3 +1,28 @@
+<?php
+$success = session('success');
+$warning = session('warning');
+?>
+
+<?php if ($success): ?>
+    <div class="alert alert-success">
+        <?= htmlspecialchars(
+            (string) $success,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($warning): ?>
+    <div class="alert alert-warning">
+        <?= htmlspecialchars(
+            (string) $warning,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+<?php endif; ?>
+
 <a href="<?= htmlspecialchars(
     url('tienda'),
     ENT_QUOTES,
@@ -109,4 +134,44 @@
 
 <?php else: ?>
     <p><strong>Producto agotado</strong></p>
+<?php endif; ?>
+
+<?php if ((int) $product->stock > 0): ?>
+
+    <form
+        method="POST"
+        action="<?= htmlspecialchars(
+            url('carrito/agregar'),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+    >
+        <?= csrf_field() ?>
+
+        <input
+            type="hidden"
+            name="product_id"
+            value="<?= (int) $product->id ?>"
+        >
+
+        <div>
+            <label for="quantity">
+                Cantidad
+            </label>
+
+            <input
+                id="quantity"
+                type="number"
+                name="quantity"
+                min="1"
+                max="<?= (int) $product->stock ?>"
+                value="1"
+            >
+        </div>
+
+        <button type="submit">
+            Agregar al carrito
+        </button>
+    </form>
+
 <?php endif; ?>
