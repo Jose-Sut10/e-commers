@@ -159,4 +159,30 @@ class Database{
         );
         return self::execute($sql, [$id]);
     }
+
+    //control de inventario
+    public static function beginTransaction(): bool{
+        return self::connect()
+            ->beginTransaction();
+    }
+
+    public static function commit(): bool{
+        return self::connect()
+            ->commit();
+    }
+
+    public static function rollBack(): bool{
+        $connection = self::connect();
+
+        if (!$connection->inTransaction()) {
+            return false;
+        }
+
+        return $connection->rollBack();
+    }
+
+    public static function inTransaction(): bool{
+        return self::connect()
+            ->inTransaction();
+    }
 }
