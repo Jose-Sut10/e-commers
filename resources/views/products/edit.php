@@ -226,6 +226,129 @@
         </label>
     </div>
 
+    <hr>
+
+    <h2>Imágenes del producto</h2>
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        action="<?= htmlspecialchars(
+            url('productos/imagen'),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+    >
+        <?= csrf_field() ?>
+
+        <input
+            type="hidden"
+            name="product_id"
+            value="<?= (int) $product->id ?>"
+        >
+
+        <div>
+            <label for="image">
+                Seleccionar imagen
+            </label>
+
+            <input
+                id="image"
+                type="file"
+                name="image"
+                accept="image/jpeg,image/png,image/webp"
+                required
+            >
+        </div>
+
+        <p>JPG, PNG o WebP. Máximo 5 MB</p>
+
+        <button type="submit">Subir imagen</button>
+    </form>
+
+    <?php if (!empty($images)): ?>
+
+    <div class="product-images">
+        <?php foreach ($images as $image): ?>
+            <div class="product-image">
+
+                <img
+                    src="<?= htmlspecialchars(
+                        url('../' . $image->path),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"
+                    alt=""
+                    width="180"
+                >
+
+                <?php if ($image->is_primary): ?>
+                    <strong>
+                        Imagen principal
+                    </strong>
+                <?php else: ?>
+
+                    <form
+                        method="POST"
+                        action="<?= htmlspecialchars(
+                            url(
+                                'productos/imagen/principal'
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                    >
+                        <?= csrf_field() ?>
+
+                        <input
+                            type="hidden"
+                            name="image_id"
+                            value="<?= (int) $image->id ?>"
+                        >
+
+                        <button type="submit">
+                            Hacer principal
+                        </button>
+                    </form>
+
+                <?php endif; ?>
+
+                <form
+                    method="POST"
+                    action="<?= htmlspecialchars(
+                        url(
+                            'productos/imagen/eliminar'
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"
+                    onsubmit="return confirm(
+                        '¿Eliminar esta imagen?'
+                    );"
+                >
+                    <?= csrf_field() ?>
+
+                    <input
+                        type="hidden"
+                        name="image_id"
+                        value="<?= (int) $image->id ?>"
+                    >
+
+                    <button type="submit">
+                        Eliminar
+                    </button>
+                </form>
+
+            </div>
+
+        <?php endforeach; ?>
+
+    </div>
+
+    <?php else: ?>
+        <p>Este producto todavía no tiene imágenes.</p>
+    <?php endif; ?>
+
     <button type="submit">
         Guardar cambios
     </button>

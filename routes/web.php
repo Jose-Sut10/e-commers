@@ -160,3 +160,19 @@ $router->post('/inventario/movimiento', [
     InventoryController::class,
     'store'
 ]);
+
+//imagenes de productos
+$router->post('/productos/imagen', [
+    ProductController::class,
+    'uploadImage'
+]);
+
+$router->post('/productos/imagen/principal', [
+    ProductController::class,
+    'setPrimaryImage'
+]);
+
+$router->post('/productos/imagen/eliminar', [
+    ProductController::class,
+    'deleteImage'
+]);
