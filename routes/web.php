@@ -6,6 +6,7 @@ use App\Controllers\UserController;
 use App\Controllers\CategoryController;
 use App\Controllers\ProductController;
 use App\Controllers\InventoryController;
+use App\Controllers\ShopController;
 
 $router->get('/', [
     HomeController::class,
@@ -175,4 +176,15 @@ $router->post('/productos/imagen/principal', [
 $router->post('/productos/imagen/eliminar', [
     ProductController::class,
     'deleteImage'
+]);
+
+//catálogo público
+$router->get('/tienda', [
+    ShopController::class,
+    'index'
+]);
+
+$router->get('/producto', [
+    ShopController::class,
+    'show'
 ]);
