@@ -219,4 +219,34 @@ class Product extends Model{
         }
         return $instance->newFromDatabase($row);
     }
+
+    //checkout y pedidos
+    public static function findPublicForUpdate(int $id): ?static {
+        $instance = new static();
+
+        $row = Database::first(
+            "
+            SELECT products.*
+            FROM products
+
+            INNER JOIN categories
+                ON categories.id = products.category_id
+
+            WHERE products.id = ?
+            AND products.active = 1
+            AND categories.active = 1
+
+            LIMIT 1
+            FOR UPDATE
+            ",
+            [$id]
+        );
+
+        if (!$row) {
+            return null;
+        }
+        return $instance->newFromDatabase(
+            $row
+        );
+    }
 }

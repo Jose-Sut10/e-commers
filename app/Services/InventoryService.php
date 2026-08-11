@@ -77,10 +77,20 @@ class InventoryService{
                 $previousStock - $quantity;
         }
 
-        Database::beginTransaction();
+        /*
+        * Solo iniciamos transacción cuando no existe
+        * una transacción superior.
+        */
+        $ownsTransaction =
+            !Database::inTransaction();
+
+        if ($ownsTransaction) {
+            Database::beginTransaction();
+        }
 
         try {
-            $product->stock = $newStock;
+            $product->stock =
+                $newStock;
 
             if (!$product->save()) {
                 throw new RuntimeException(
@@ -88,27 +98,31 @@ class InventoryService{
                 );
             }
 
-            $movement = new InventoryMovement([
-                'product_id' =>
-                    (int) $product->id,
+            $movement =
+                new InventoryMovement([
+                    'product_id' =>
+                        (int) $product->id,
 
-                'user_id' => $userId,
+                    'user_id' =>
+                        $userId,
 
-                'type' => $type,
+                    'type' =>
+                        $type,
 
-                'quantity' => $quantity,
+                    'quantity' =>
+                        $quantity,
 
-                'previous_stock' =>
-                    $previousStock,
+                    'previous_stock' =>
+                        $previousStock,
 
-                'new_stock' =>
-                    $newStock,
+                    'new_stock' =>
+                        $newStock,
 
-                'reason' =>
-                    $reason === ''
-                        ? null
-                        : $reason,
-            ]);
+                    'reason' =>
+                        $reason === ''
+                            ? null
+                            : $reason,
+                ]);
 
             if (!$movement->save()) {
                 throw new RuntimeException(
@@ -116,11 +130,18 @@ class InventoryService{
                 );
             }
 
-            Database::commit();
+            if ($ownsTransaction) {
+                Database::commit();
+            }
 
             return $movement;
+
         } catch (Throwable $exception) {
-            if (Database::inTransaction()) {
+
+            if (
+                $ownsTransaction
+                && Database::inTransaction()
+            ) {
                 Database::rollBack();
             }
 
