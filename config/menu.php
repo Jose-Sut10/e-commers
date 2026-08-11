@@ -1,59 +1,34 @@
 <?php
-
 return [
-
     [
-        'title' => 'Dashboard',
-        'icon'  => 'fa-solid fa-house',
+        'label' => 'Panel principal',
         'route' => '/',
+        'icon' => '⌂',
     ],
-
     [
-        'title' => 'Empresa',
-        'icon'  => 'fa-solid fa-building',
+        'label' => 'Empresa',
         'route' => '/empresa',
+        'icon' => '🏢',
     ],
-
     [
-        'title' => 'Productos',
-        'icon'  => 'fa-solid fa-box',
-        'route' => '/productos',
+        'label' => 'Usuarios',
+        'route' => '/usuarios',
+        'icon' => '👥',
+        'admin' => true,
     ],
-
     [
-        'title' => 'Categorías',
-        'icon'  => 'fa-solid fa-layer-group',
+        'label' => 'Categorías',
         'route' => '/categorias',
+        'icon' => '▦',
     ],
-
     [
-        'title' => 'Marcas',
-        'icon'  => 'fa-solid fa-tags',
-        'route' => '/marcas',
+        'label' => 'Productos',
+        'route' => '/productos',
+        'icon' => '□',
     ],
-
     [
-        'title' => 'Clientes',
-        'icon'  => 'fa-solid fa-users',
-        'route' => '/clientes',
-    ],
-
-    [
-        'title' => 'Pedidos',
-        'icon'  => 'fa-solid fa-cart-shopping',
+        'label' => 'Pedidos',
         'route' => '/pedidos',
+        'icon' => '☷',
     ],
-
-    [
-        'title' => 'Reportes',
-        'icon'  => 'fa-solid fa-chart-column',
-        'route' => '/reportes',
-    ],
-
-    [
-        'title' => 'Configuración',
-        'icon'  => 'fa-solid fa-gear',
-        'route' => '/configuracion',
-    ],
-
 ];

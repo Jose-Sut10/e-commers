@@ -161,3 +161,26 @@ if (!function_exists('asset')) {
             : "{$baseUrl}/{$path}";
     }
 }
+
+//Layout administrativo y sidebar
+if (!function_exists('current_uri')) {
+    function current_uri(): string{
+        return (new \Core\Request())->uri();
+    }
+}
+
+if (!function_exists('route_active')) {
+    function route_active(string $route): bool{
+        $uri = current_uri();
+
+        if ($route === '/') {
+            return $uri === '/';
+        }
+
+        return $uri === $route
+            || str_starts_with(
+                $uri,
+                rtrim($route, '/') . '/'
+            );
+    }
+}
