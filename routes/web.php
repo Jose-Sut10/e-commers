@@ -132,3 +132,19 @@ $router->post('/productos', [
     ProductController::class,
     'store'
 ]);
+
+//editar y eliminar productos
+$router->get('/productos/editar', [
+    ProductController::class,
+    'edit'
+]);
+
+$router->post('/productos/actualizar', [
+    ProductController::class,
+    'update'
+]);
+
+$router->post('/productos/eliminar', [
+    ProductController::class,
+    'destroy'
+]);
