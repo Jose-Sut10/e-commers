@@ -15,6 +15,14 @@
 
 <nav class="shop-categories">
     <a href="<?= htmlspecialchars(
+        url('carrito'),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>">
+        Ver carrito
+    </a>
+
+    <a href="<?= htmlspecialchars(
         url('tienda'),
         ENT_QUOTES,
         'UTF-8'
