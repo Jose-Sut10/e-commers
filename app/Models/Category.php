@@ -24,4 +24,22 @@ class Category extends Model{
         }
         return $instance->newFromDatabase($row);
     }
+
+    //registro y listado de productos
+    public static function active(): array{
+        $instance = new static();
+
+        $rows = Database::select(
+            "SELECT *
+            FROM `categories`
+            WHERE `active` = 1
+            ORDER BY `name` ASC"
+        );
+
+        return array_map(
+            fn (array $row) =>
+                $instance->newFromDatabase($row),
+            $rows
+        );
+    }
 }

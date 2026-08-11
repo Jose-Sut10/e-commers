@@ -20,8 +20,9 @@ class Database{
             }
 
             $dsn = sprintf(
-                "mysql:host=%s;dbname=%s;charset=utf8mb4",
+                'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
                 $config['host'],
+                $config['port'] ?? 3306,
                 $config['database']
             );
 
