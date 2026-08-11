@@ -64,20 +64,11 @@ class CheckoutController extends Controller{
         $result = validator(
             $input,
             [
-                'name' =>
-                    'required|min:3|max:150',
-
-                'phone' =>
-                    'required|max:30',
-
-                'email' =>
-                    'email|max:150',
-
-                'address' =>
-                    'required|max:500',
-
-                'notes' =>
-                    'max:1000',
+                'name' =>'required|min:3|max:150',
+                'phone' =>'required|digits:8',
+                'email' =>'email|max:150',
+                'address' =>'required|max:500',
+                'notes' =>'max:1000',
             ]
         )->validate();
 

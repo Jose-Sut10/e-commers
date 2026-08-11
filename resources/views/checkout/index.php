@@ -115,14 +115,16 @@
     </div>
 
     <div>
-        <label for="phone">
-            Teléfono
-        </label>
+        <label for="phone">Teléfono</label>
 
         <input
             id="phone"
-            type="text"
+            type="tel"
             name="phone"
+            inputmode="numeric"
+            maxlength="8"
+            pattern="[0-9]{8}"
+            placeholder="55551234"
             value="<?= htmlspecialchars(
                 (string) old('phone'),
                 ENT_QUOTES,

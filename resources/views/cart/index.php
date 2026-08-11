@@ -192,6 +192,16 @@ $warning = session('warning');
         ) ?>
     </h2>
 
+    <p>
+        <a href="<?= htmlspecialchars(
+            url('checkout'),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>">
+            Finalizar compra
+        </a>
+    </p>
+
     <form
         method="POST"
         action="<?= htmlspecialchars(

@@ -5,6 +5,7 @@ use Core\Validation\Rules\Rule;
 use Core\Validation\Rules\MinRule;
 use Core\Validation\Rules\MaxRule;
 use Core\Validation\Rules\EmailRule;
+use Core\Validation\Rules\DigitsRule;
 use Core\Validation\Rules\NumericRule;
 use Core\Validation\Rules\RequiredRule;
 
@@ -62,15 +63,27 @@ class RuleResolver{
         ): Rule {
         return match ($name) {
             'required' => new RequiredRule(),
-            'email'    => new EmailRule(),
-            'numeric'  => new NumericRule(),
+            'email' => new EmailRule(),
+            'numeric' => new NumericRule(),
+            'digits' => new DigitsRule(
+                (int) self::numericParameter(
+                    $name,
+                    $parameters
+                )
+            ),
 
             'min' => new MinRule(
-                self::numericParameter($name, $parameters)
+                self::numericParameter(
+                    $name,
+                    $parameters
+                )
             ),
 
             'max' => new MaxRule(
-                self::numericParameter($name, $parameters)
+                self::numericParameter(
+                    $name,
+                    $parameters
+                )
             ),
 
             default => throw new InvalidArgumentException(
