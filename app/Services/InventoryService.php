@@ -1,19 +1,26 @@
 <?php
 namespace App\Services;
-use RuntimeException;
 use Throwable;
+use RuntimeException;
 use Core\Database;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\InventoryMovement;
 
 class InventoryService{
+    /*
+     * =====================================================
+     * PRODUCTO SIN VARIANTES
+     * =====================================================
+     */
+
     public function add(
         Product $product,
         int $quantity,
         ?int $userId,
         ?string $reason = null
     ): InventoryMovement {
-        return $this->move(
+        return $this->moveProduct(
             $product,
             'in',
             $quantity,
@@ -28,7 +35,7 @@ class InventoryService{
         ?int $userId,
         ?string $reason = null
     ): InventoryMovement {
-        return $this->move(
+        return $this->moveProduct(
             $product,
             'out',
             $quantity,
@@ -37,13 +44,138 @@ class InventoryService{
         );
     }
 
-    private function move(
+    /*
+     * =====================================================
+     * VARIANTES
+     * =====================================================
+     */
+
+    public function addVariant(
+        ProductVariant $variant,
+        int $quantity,
+        ?int $userId,
+        ?string $reason = null
+    ): InventoryMovement {
+        return $this->moveVariant(
+            $variant,
+            'in',
+            $quantity,
+            $userId,
+            $reason
+        );
+    }
+
+    public function removeVariant(
+        ProductVariant $variant,
+        int $quantity,
+        ?int $userId,
+        ?string $reason = null
+    ): InventoryMovement {
+        return $this->moveVariant(
+            $variant,
+            'out',
+            $quantity,
+            $userId,
+            $reason
+        );
+    }
+
+
+    /*
+     * =====================================================
+     * MOVIMIENTO DE PRODUCTO
+     * =====================================================
+     */
+
+    private function moveProduct(
         Product $product,
         string $type,
         int $quantity,
         ?int $userId,
         ?string $reason
     ): InventoryMovement {
+        if (
+            ProductVariant::existsForProduct(
+                (int) $product->id
+            )
+        ) {
+            throw new RuntimeException(
+                'Este producto utiliza variantes. Debes registrar el movimiento en una variante específica.'
+            );
+        }
+
+        $previousStock =
+            (int) $product->stock;
+
+        $newStock =
+            $this->calculateStock(
+                $previousStock,
+                $quantity,
+                $type
+            );
+
+        return $this->executeMovement(
+            target: $product,
+            productId: (int) $product->id,
+            variantId: null,
+            type: $type,
+            quantity: $quantity,
+            previousStock: $previousStock,
+            newStock: $newStock,
+            userId: $userId,
+            reason: $reason
+        );
+    }
+
+
+    /*
+     * =====================================================
+     * MOVIMIENTO DE VARIANTE
+     * =====================================================
+     */
+
+    private function moveVariant(
+        ProductVariant $variant,
+        string $type,
+        int $quantity,
+        ?int $userId,
+        ?string $reason
+    ): InventoryMovement {
+        $previousStock =
+            (int) $variant->stock;
+
+        $newStock =
+            $this->calculateStock(
+                $previousStock,
+                $quantity,
+                $type
+            );
+
+        return $this->executeMovement(
+            target: $variant,
+            productId: (int) $variant->product_id,
+            variantId: (int) $variant->id,
+            type: $type,
+            quantity: $quantity,
+            previousStock: $previousStock,
+            newStock: $newStock,
+            userId: $userId,
+            reason: $reason
+        );
+    }
+
+
+    /*
+     * =====================================================
+     * CÁLCULO
+     * =====================================================
+     */
+
+    private function calculateStock(
+        int $previousStock,
+        int $quantity,
+        string $type
+    ): int {
         if ($quantity <= 0) {
             throw new RuntimeException(
                 'La cantidad debe ser mayor que cero.'
@@ -60,27 +192,39 @@ class InventoryService{
             );
         }
 
-        $previousStock =
-            (int) $product->stock;
-
         if ($type === 'in') {
-            $newStock =
-                $previousStock + $quantity;
-        } else {
-            if ($quantity > $previousStock) {
-                throw new RuntimeException(
-                    'No hay existencias suficientes.'
-                );
-            }
-
-            $newStock =
-                $previousStock - $quantity;
+            return $previousStock
+                + $quantity;
         }
 
-        /*
-        * Solo iniciamos transacción cuando no existe
-        * una transacción superior.
-        */
+        if ($quantity > $previousStock) {
+            throw new RuntimeException(
+                'No hay existencias suficientes.'
+            );
+        }
+
+        return $previousStock
+            - $quantity;
+    }
+
+    /*
+     * =====================================================
+     * GUARDAR MOVIMIENTO
+     * =====================================================
+     */
+
+    private function executeMovement(
+        Product|ProductVariant $target,
+        int $productId,
+        ?int $variantId,
+        string $type,
+        int $quantity,
+        int $previousStock,
+        int $newStock,
+        ?int $userId,
+        ?string $reason
+    ): InventoryMovement {
+
         $ownsTransaction =
             !Database::inTransaction();
 
@@ -89,10 +233,10 @@ class InventoryService{
         }
 
         try {
-            $product->stock =
+            $target->stock =
                 $newStock;
 
-            if (!$product->save()) {
+            if (!$target->save()) {
                 throw new RuntimeException(
                     'No fue posible actualizar las existencias.'
                 );
@@ -101,7 +245,10 @@ class InventoryService{
             $movement =
                 new InventoryMovement([
                     'product_id' =>
-                        (int) $product->id,
+                        $productId,
+
+                    'variant_id' =>
+                        $variantId,
 
                     'user_id' =>
                         $userId,

@@ -78,4 +78,44 @@ class ProductVariant extends Model{
 
         return (float) $product->price;
     }
+
+    public static function findForProduct(
+        int $variantId,
+        int $productId
+    ): ?static {
+        $instance = new static();
+
+        $row = Database::first(
+            "SELECT *
+            FROM `product_variants`
+            WHERE `id` = ?
+            AND `product_id` = ?
+            LIMIT 1",
+            [
+                $variantId,
+                $productId,
+            ]
+        );
+
+        if (!$row) {
+            return null;
+        }
+
+        return $instance->newFromDatabase(
+            $row
+        );
+    }
+
+    public static function existsForProduct(
+        int $productId
+    ): bool {
+        $row = Database::first(
+            "SELECT `id`
+            FROM `product_variants`
+            WHERE `product_id` = ?
+            LIMIT 1",
+            [$productId]
+        );
+        return $row !== null;
+    }
 }
