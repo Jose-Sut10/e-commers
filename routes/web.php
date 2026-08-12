@@ -10,6 +10,7 @@ use App\Controllers\ShopController;
 use App\Controllers\CartController; 
 use App\Controllers\CheckoutController;
 use App\Controllers\OrderController;
+use App\Controllers\ProductVariantController;
 
 $router->get('/', [
     HomeController::class,
@@ -248,4 +249,20 @@ $router->get('/pedidos/ver', [
 $router->post('/pedidos/estado', [
     OrderController::class,
     'updateStatus'
+]);
+
+//variantes de productos
+$router->get('/productos/variantes', [
+    ProductVariantController::class,
+    'index'
+]);
+
+$router->get('/productos/variantes/crear', [
+    ProductVariantController::class,
+    'create'
+]);
+
+$router->post('/productos/variantes', [
+    ProductVariantController::class,
+    'store'
 ]);
