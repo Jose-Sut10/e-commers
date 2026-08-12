@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+:root{
+    --colorPrincipal: #0358f5;
+}
+
 html {
     font-family:
         Inter,
@@ -31,7 +35,7 @@ body {
 .admin-sidebar {
     width: 250px;
     min-height: 100vh;
-    background: #17191c;
+    background: var(--colorPrincipal);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -373,7 +377,7 @@ button,
 .quick-actions a {
     padding: 9px 14px;
     border-radius: 7px;
-    background: #222;
+    background: var(--colorPrincipal);
     color: #fff;
     text-decoration: none;
 }
