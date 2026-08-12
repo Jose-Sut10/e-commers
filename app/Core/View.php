@@ -1,40 +1,63 @@
 <?php
-
 namespace Core;
+use RuntimeException;
 
-class View
-{
-    protected static string $layout = 'admin';
-
+class View{
     public static function render(
         string $view,
         array $data = [],
         ?string $layout = 'admin'
     ): void {
-
-        extract($data);
-
-        $viewPath = dirname(__DIR__, 2)
-            . "/resources/views/{$view}.php";
+        $viewPath = BASE_PATH
+            . '/resources/views/'
+            . str_replace('.', '/', $view)
+            . '.php';
 
         if (!file_exists($viewPath)) {
-            die("La vista '{$view}' no existe.");
+            throw new RuntimeException(
+                "La vista '{$view}' no existe."
+            );
         }
 
+        /*
+         * Convertimos las claves del array en variables.
+         *
+         * Ejemplo:
+         * ['title' => 'Inicio']
+         *
+         * se convierte en:
+         * $title = 'Inicio';
+         */
+        extract($data, EXTR_SKIP);
+
+        /*
+         * Capturamos el HTML generado por la vista.
+         */
+        ob_start();
+
+        require $viewPath;
+
+        $content = ob_get_clean();
+
+        /*
+         * Si no queremos layout, imprimimos
+         * directamente la vista.
+         */
         if ($layout === null) {
-            require $viewPath;
+            echo $content;
             return;
         }
 
-        $layoutPath = dirname(__DIR__, 2)
-            . "/resources/views/layouts/{$layout}.php";
+        $layoutPath = BASE_PATH
+            . '/resources/views/layouts/'
+            . str_replace('.', '/', $layout)
+            . '.php';
 
         if (!file_exists($layoutPath)) {
-            die("El layout '{$layout}' no existe.");
+            throw new RuntimeException(
+                "El layout '{$layout}' no existe."
+            );
         }
-
-        $content = $viewPath;
-
         require $layoutPath;
     }
 }

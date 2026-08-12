@@ -412,19 +412,3 @@
         </a>
     </div>
 </section>
-
-<!-- =====================================================
-     CERRAR SESIÓN
-===================================================== -->
-<hr>
-<form
-    method="POST"
-    action="<?= htmlspecialchars(
-        url('logout'),
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>"
->
-    <?= csrf_field() ?>
-    <button type="submit">Cerrar sesión</button>
-</form>
