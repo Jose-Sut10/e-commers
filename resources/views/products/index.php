@@ -146,6 +146,17 @@
                             ) ?>">
                                 Inventario
                         </a>
+                        
+                        <a href="<?= htmlspecialchars(
+                            url(
+                                'productos/variantes?id='
+                                . (int) $product->id
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>">
+                            Variantes
+                        </a>
 
                         <a href="<?= htmlspecialchars(
                             url(
