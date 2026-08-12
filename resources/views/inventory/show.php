@@ -7,28 +7,30 @@
     ) ?>
 </h1>
 
-<p>
-    SKU:
-    <strong>
-        <?= htmlspecialchars(
-            (string) $product->sku,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </strong>
-</p>
+<?php
+$success = session('success');
+$warning = session('warning');
 
-<h2>
-    Stock actual:
-    <?= (int) $product->stock ?>
-</h2>
-
-<?php $success = session('success'); ?>
+$hasVariants =
+    !empty($variants);
+?>
 
 <?php if ($success): ?>
+
     <div class="alert alert-success">
         <?= htmlspecialchars(
             (string) $success,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </div>
+
+<?php endif; ?>
+
+<?php if ($warning): ?>
+    <div class="alert alert-warning">
+        <?= htmlspecialchars(
+            (string) $warning,
             ENT_QUOTES,
             'UTF-8'
         ) ?>
@@ -43,8 +45,103 @@
             'UTF-8'
         ) ?>
     </div>
+
 <?php endif; ?>
 
+<p>
+    SKU:
+    <strong>
+        <?= htmlspecialchars(
+            (string) $product->sku,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </strong>
+</p>
+
+<!-- =====================================================
+     STOCK
+===================================================== -->
+
+<?php if ($hasVariants): ?>
+    <?php
+    $totalStock = 0;
+
+    foreach ($variants as $variant) {
+        $totalStock +=
+            (int) $variant->stock;
+    }
+    ?>
+
+    <h2>
+        Stock total:
+        <?= $totalStock ?>
+    </h2>
+
+    <table>
+        <thead>
+
+            <tr>
+                <th>Variante</th>
+                <th>SKU</th>
+                <th>Stock</th>
+                <th>Estado</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <?php foreach ($variants as $variant): ?>
+
+                <tr>
+
+                    <td>
+                        <?= htmlspecialchars(
+                            (string) $variant->name,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars(
+                            (string) $variant->sku,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </td>
+
+                    <td>
+                        <strong>
+                            <?= (int) $variant->stock ?>
+                        </strong>
+                    </td>
+
+                    <td>
+                        <?= (bool) $variant->active
+                            ? 'Activa'
+                            : 'Inactiva'
+                        ?>
+                    </td>
+
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+<?php else: ?>
+    <h2>
+        Stock actual:
+        <?= (int) $product->stock ?>
+    </h2>
+<?php endif; ?>
+
+<hr>
+
+<!-- =====================================================
+     NUEVO MOVIMIENTO
+===================================================== -->
 <h2>Registrar movimiento</h2>
 
 <form
@@ -63,18 +160,63 @@
         value="<?= (int) $product->id ?>"
     >
 
-    <div>
-        <label for="type">
-            Tipo
-        </label>
+    <?php if ($hasVariants): ?>
+        <div>
+            <label for="variant_id">Variante</label>
 
-        <select
-            id="type"
-            name="type"
-        >
-            <option value="">
-                Seleccionar
-            </option>
+            <select
+                id="variant_id"
+                name="variant_id"
+            >
+
+                <option value="">Selecciona una variante</option>
+
+                <?php foreach ($variants as $variant): ?>
+                    <option
+                        value="<?= (int) $variant->id ?>"
+                        <?= (string) old(
+                            'variant_id'
+                        ) === (string) $variant->id
+                            ? 'selected'
+                            : ''
+                        ?>
+                    >
+
+                        <?= htmlspecialchars(
+                            (string) $variant->name,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+
+                        —
+                        Stock:
+                        <?= (int) $variant->stock ?>
+
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <?php if (error('variant_id')): ?>
+                <small class="form-error">
+                    <?= htmlspecialchars(
+                        (string) error(
+                            'variant_id'
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
+                </small>
+            <?php endif; ?>
+        </div>
+
+    <?php endif; ?>
+
+    <div>
+
+        <label for="type">Tipo</label>
+
+        <select id="type"name="type">
+            <option value="">Seleccionar</option>
 
             <option
                 value="in"
@@ -109,9 +251,7 @@
     </div>
 
     <div>
-        <label for="quantity">
-            Cantidad
-        </label>
+        <label for="quantity">Cantidad</label>
 
         <input
             id="quantity"
@@ -138,9 +278,7 @@
     </div>
 
     <div>
-        <label for="reason">
-            Motivo
-        </label>
+        <label for="reason">Motivo</label>
 
         <input
             id="reason"
@@ -155,28 +293,29 @@
         >
     </div>
 
-    <button type="submit">
-        Registrar movimiento
-    </button>
+    <button type="submit">Registrar movimiento</button>
 </form>
 
 <hr>
 
+<!-- =====================================================
+     HISTORIAL
+===================================================== -->
+
 <h2>Historial</h2>
 
 <?php if (empty($movements)): ?>
-
     <p>
         Este producto todavía no tiene
         movimientos de inventario.
     </p>
-
 <?php else: ?>
 
 <table>
     <thead>
         <tr>
             <th>Fecha</th>
+            <th>Variante</th>
             <th>Tipo</th>
             <th>Cantidad</th>
             <th>Anterior</th>
@@ -195,6 +334,28 @@
                         ENT_QUOTES,
                         'UTF-8'
                     ) ?>
+                </td>
+
+                <td>
+                    <?php if ($movement->variant_name): ?>
+
+                        <?= htmlspecialchars(
+                            (string) $movement->variant_name,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+
+                        <small>
+                            <?= htmlspecialchars(
+                                (string) $movement->variant_sku,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </small>
+
+                    <?php else: ?>
+                        Producto base
+                    <?php endif; ?>
                 </td>
 
                 <td>
