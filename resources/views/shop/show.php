@@ -1,177 +1,104 @@
 <?php
-$success = session('success');
-$warning = session('warning');
+$hasVariants = !empty($variants);
+
+$availableStock = $hasVariants
+    ? array_sum(
+        array_map(
+            fn ($variant) =>
+                (int) $variant->stock,
+            $variants
+        )
+    )
+    : (int) $product->stock;
 ?>
 
-<?php if ($success): ?>
-    <div class="alert alert-success">
-        <?= htmlspecialchars(
-            (string) $success,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </div>
-<?php endif; ?>
+<?php if ($availableStock > 0): ?>
 
-<?php if ($warning): ?>
-    <div class="alert alert-warning">
-        <?= htmlspecialchars(
-            (string) $warning,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </div>
-<?php endif; ?>
-
-<a href="<?= htmlspecialchars(
-    url('tienda'),
-    ENT_QUOTES,
-    'UTF-8'
-) ?>">
-    ← Volver a la tienda
-</a>
-
-<h1>
-    <?= htmlspecialchars(
-        (string) $product->name,
+<form
+    method="POST"
+    action="<?= htmlspecialchars(
+        url('carrito/agregar'),
         ENT_QUOTES,
         'UTF-8'
-    ) ?>
-</h1>
+    ) ?>"
+>
+    <?= csrf_field() ?>
 
-<p>
-    Categoría:
-    <strong>
-        <?= htmlspecialchars(
-            (string) $product->category_name,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </strong>
-</p>
-
-<!-- Galería -->
-
-<?php if (!empty($images)): ?>
-    <div class="product-gallery">
-        <?php foreach ($images as $image): ?>
-            <img
-                src="<?= htmlspecialchars(
-                    asset(
-                        (string) $image->path
-                    ),
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>"
-                alt="<?= htmlspecialchars(
-                    (string) $product->name,
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>"
-                width="350"
-            >
-        <?php endforeach; ?>
-    </div>
-
-<?php elseif ($product->image_path): ?>
-    <img
-        src="<?= htmlspecialchars(
-            asset(
-                (string) $product->image_path
-            ),
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>"
-        alt="<?= htmlspecialchars(
-            (string) $product->name,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>"
-        width="350"
+    <input
+        type="hidden"
+        name="product_id"
+        value="<?= (int) $product->id ?>"
     >
 
-<?php else: ?>
-    <p>Producto sin imágenes.</p>
-<?php endif; ?>
-
-<h2>
-    Q <?= number_format(
-        (float) $product->price,
-        2
-    ) ?>
-</h2>
-
-<?php if ($product->description): ?>
-    <p>
-        <?= nl2br(
-            htmlspecialchars(
-                (string) $product->description,
-                ENT_QUOTES,
-                'UTF-8'
-            )
-        ) ?>
-    </p>
-
-<?php endif; ?>
-
-<p>
-    SKU:
-    <?= htmlspecialchars(
-        (string) $product->sku,
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>
-</p>
-
-
-<?php if ((int) $product->stock > 0): ?>
-    <p><strong>Disponible</strong></p>
-
-    <p>
-        Existencias:
-        <?= (int) $product->stock ?>
-    </p>
-
-<?php else: ?>
-    <p><strong>Producto agotado</strong></p>
-<?php endif; ?>
-
-<?php if ((int) $product->stock > 0): ?>
-
-    <form
-        method="POST"
-        action="<?= htmlspecialchars(
-            url('carrito/agregar'),
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>"
-    >
-        <?= csrf_field() ?>
-
-        <input
-            type="hidden"
-            name="product_id"
-            value="<?= (int) $product->id ?>"
-        >
-
+    <?php if ($hasVariants): ?>
         <div>
-            <label for="quantity">
-                Cantidad
+            <label for="variant_id">
+                Selecciona una opción
             </label>
 
-            <input
-                id="quantity"
-                type="number"
-                name="quantity"
-                min="1"
-                max="<?= (int) $product->stock ?>"
-                value="1"
+            <select
+                id="variant_id"
+                name="variant_id"
+                required
             >
+
+                <option value="">Seleccionar</option>
+
+                <?php foreach ($variants as $variant): ?>
+
+                    <?php
+                    $variantPrice =
+                        $variant->finalPrice(
+                            $product
+                        );
+                    ?>
+
+                    <option
+                        value="<?= (int) $variant->id ?>"
+                        <?= (int) $variant->stock <= 0
+                            ? 'disabled'
+                            : ''
+                        ?>
+                    >
+                        <?= htmlspecialchars(
+                            (string) $variant->name,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+
+                        —
+                        Q <?= number_format(
+                            $variantPrice,
+                            2
+                        ) ?>
+
+                        —
+                        Stock:
+                        <?= (int) $variant->stock ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
         </div>
+    <?php endif; ?>
 
-        <button type="submit">
-            Agregar al carrito
-        </button>
-    </form>
 
+    <div>
+        <label for="quantity">Cantidad</label>
+
+        <input
+            id="quantity"
+            type="number"
+            name="quantity"
+            min="1"
+            value="1"
+            required
+        >
+    </div>
+
+    <button type="submit">Agregar al carrito</button>
+
+</form>
+
+<?php else: ?>
+    <p><strong> Producto agotado</strong></p>
 <?php endif; ?>

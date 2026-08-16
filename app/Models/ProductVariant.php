@@ -118,4 +118,78 @@ class ProductVariant extends Model{
         );
         return $row !== null;
     }
+
+    //variantes en compras
+    public static function findPublicForProduct(
+        int $variantId,
+        int $productId
+    ): ?static {
+        $instance = new static();
+
+        $row = Database::first(
+            "SELECT product_variants.*
+            FROM product_variants
+
+            INNER JOIN products
+                ON products.id = product_variants.product_id
+
+            INNER JOIN categories
+                ON categories.id = products.category_id
+
+            WHERE product_variants.id = ?
+            AND product_variants.product_id = ?
+            AND product_variants.active = 1
+            AND products.active = 1
+            AND categories.active = 1
+
+            LIMIT 1",
+            [
+                $variantId,
+                $productId,
+            ]
+        );
+
+        if (!$row) {
+            return null;
+        }
+
+        return $instance->newFromDatabase($row);
+    }
+
+    public static function findPublicForUpdate(
+        int $variantId,
+        int $productId
+    ): ?static {
+        $instance = new static();
+
+        $row = Database::first(
+            "SELECT product_variants.*
+            FROM product_variants
+
+            INNER JOIN products
+                ON products.id = product_variants.product_id
+
+            INNER JOIN categories
+                ON categories.id = products.category_id
+
+            WHERE product_variants.id = ?
+            AND product_variants.product_id = ?
+            AND product_variants.active = 1
+            AND products.active = 1
+            AND categories.active = 1
+
+            LIMIT 1
+            FOR UPDATE",
+            [
+                $variantId,
+                $productId,
+            ]
+        );
+
+        if (!$row) {
+            return null;
+        }
+
+        return $instance->newFromDatabase($row);
+    }
 }

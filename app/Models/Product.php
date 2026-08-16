@@ -89,6 +89,16 @@ class Product extends Model{
                 categories.name AS category_name,
                 categories.slug AS category_slug,
 
+                COALESCE(
+                    (
+                        SELECT SUM(product_variants.stock)
+                        FROM product_variants
+                        WHERE product_variants.product_id = products.id
+                        AND product_variants.active = 1
+                    ),
+                    products.stock
+                ) AS available_stock
+
                 (
                     SELECT product_images.path
                     FROM product_images
@@ -147,6 +157,16 @@ class Product extends Model{
                 categories.name AS category_name,
                 categories.slug AS category_slug,
 
+                COALESCE(
+                    (
+                        SELECT SUM(product_variants.stock)
+                        FROM product_variants
+                        WHERE product_variants.product_id = products.id
+                        AND product_variants.active = 1
+                    ),
+                    products.stock
+                ) AS available_stock
+
                 (
                     SELECT product_images.path
                     FROM product_images
@@ -189,6 +209,16 @@ class Product extends Model{
             SELECT
                 products.*,
                 categories.name AS category_name,
+
+                COALESCE(
+                    (
+                        SELECT SUM(product_variants.stock)
+                        FROM product_variants
+                        WHERE product_variants.product_id = products.id
+                        AND product_variants.active = 1
+                    ),
+                    products.stock
+                ) AS available_stock
 
                 (
                     SELECT product_images.path

@@ -140,13 +140,11 @@
                     </strong>
                 </p>
 
-
-                <?php if ((int) $product->stock > 0): ?>
+                <?php if ((int) $product->available_stock > 0): ?>
                     <p>Disponible</p>
                 <?php else: ?>
                     <p>Agotado</p>
                 <?php endif; ?>
-
 
                 <a href="<?= htmlspecialchars(
                     url(

@@ -14,22 +14,15 @@ class ShopController extends Controller{
 
         view('shop/index', [
             'title' => 'Tienda',
-
-            'company' =>
-                Company::first(),
-
-            'categories' =>
-                Category::active(),
-
+            'company' =>Company::first(),
+            'categories' =>Category::active(),
             'products' =>
                 Product::publicCatalog(
                     $categorySlug === ''
                         ? null
                         : $categorySlug
                 ),
-
-            'selectedCategory' =>
-                $categorySlug,
+            'selectedCategory' =>$categorySlug,
         ]);
     }
 
@@ -65,13 +58,8 @@ class ShopController extends Controller{
 
         view('shop/show', [
             'title' => $product->name,
-
-            'company' =>
-                Company::first(),
-
-            'product' =>
-                $product,
-
+            'company' =>Company::first(),
+            'product' =>$product,
             'images' =>
                 ProductImage::forProduct(
                     (int) $product->id

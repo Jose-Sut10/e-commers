@@ -3,16 +3,15 @@ namespace App\Services;
 use RuntimeException;
 use Core\Session;
 use App\Models\Product;
+use App\Models\ProductVariant;
 
 class CartService{
     private const SESSION_KEY = 'cart';
-
     public function raw(): array{
         $cart = Session::get(
             self::SESSION_KEY,
             []
         );
-
         return is_array($cart)
             ? $cart
             : [];
@@ -20,7 +19,8 @@ class CartService{
 
     public function add(
         Product $product,
-        int $quantity = 1
+        int $quantity = 1,
+        ?ProductVariant $variant = null
     ): void {
         if ($quantity < 1) {
             throw new RuntimeException(
@@ -28,7 +28,37 @@ class CartService{
             );
         }
 
-        $stock = (int) $product->stock;
+        $variants =
+            ProductVariant::forProduct(
+                (int) $product->id,
+                true
+            );
+
+        $hasVariants =
+            !empty($variants);
+
+        if ($hasVariants && !$variant) {
+            throw new RuntimeException(
+                'Debes seleccionar una variante.'
+            );
+        }
+
+        if ($variant) {
+            if (
+                (int) $variant->product_id
+                !== (int) $product->id
+            ) {
+                throw new RuntimeException(
+                    'La variante seleccionada no pertenece al producto.'
+                );
+            }
+            $stock =(int) $variant->stock;
+            $variantId =(int) $variant->id;
+        } else {
+            $stock =(int) $product->stock;
+            $variantId = null;
+        }
+
 
         if ($stock <= 0) {
             throw new RuntimeException(
@@ -36,15 +66,21 @@ class CartService{
             );
         }
 
-        $cart = $this->raw();
 
-        $productId = (int) $product->id;
+        $key = $this->key(
+            (int) $product->id,
+            $variantId
+        );
 
-        $currentQuantity =
-            (int) ($cart[$productId] ?? 0);
+        $cart =$this->raw();
 
-        $newQuantity =
-            $currentQuantity + $quantity;
+        $current =
+            (int) (
+                $cart[$key]['quantity']
+                ?? 0
+            );
+
+        $newQuantity =$current + $quantity;
 
         if ($newQuantity > $stock) {
             throw new RuntimeException(
@@ -52,8 +88,18 @@ class CartService{
             );
         }
 
-        $cart[$productId] =
-            $newQuantity;
+
+        $cart[$key] = [
+            'product_id' =>
+                (int) $product->id,
+
+            'variant_id' =>
+                $variantId,
+
+            'quantity' =>
+                $newQuantity,
+        ];
+
 
         Session::put(
             self::SESSION_KEY,
@@ -61,20 +107,34 @@ class CartService{
         );
     }
 
+
     public function update(
         int $productId,
+        ?int $variantId,
         int $quantity
     ): void {
-        $cart = $this->raw();
+        $key =
+            $this->key(
+                $productId,
+                $variantId
+            );
 
-        if (!isset($cart[$productId])) {
+        $cart =
+            $this->raw();
+
+
+        if (!isset($cart[$key])) {
             throw new RuntimeException(
                 'El producto no está en el carrito.'
             );
         }
 
+
         if ($quantity <= 0) {
-            $this->remove($productId);
+            $this->remove(
+                $productId,
+                $variantId
+            );
 
             return;
         }
@@ -85,20 +145,50 @@ class CartService{
             );
 
         if (!$product) {
-            $this->remove($productId);
+            $this->remove(
+                $productId,
+                $variantId
+            );
 
             throw new RuntimeException(
                 'El producto ya no está disponible.'
             );
         }
 
-        if ($quantity > (int) $product->stock) {
+        if ($variantId !== null) {
+
+            $variant =
+                ProductVariant::findPublicForProduct(
+                    $variantId,
+                    $productId
+                );
+
+            if (!$variant) {
+                $this->remove(
+                    $productId,
+                    $variantId
+                );
+
+                throw new RuntimeException(
+                    'La variante ya no está disponible.'
+                );
+            }
+
+            $stock =(int) $variant->stock;
+
+        } else {
+
+            $stock =(int) $product->stock;
+        }
+
+
+        if ($quantity > $stock) {
             throw new RuntimeException(
                 'La cantidad solicitada supera las existencias disponibles.'
             );
         }
 
-        $cart[$productId] =
+        $cart[$key]['quantity'] =
             $quantity;
 
         Session::put(
@@ -108,12 +198,19 @@ class CartService{
     }
 
     public function remove(
-        int $productId
+        int $productId,
+        ?int $variantId = null
     ): void {
-        $cart = $this->raw();
+        $cart =
+            $this->raw();
 
         unset(
-            $cart[$productId]
+            $cart[
+                $this->key(
+                    $productId,
+                    $variantId
+                )
+            ]
         );
 
         Session::put(
@@ -129,76 +226,127 @@ class CartService{
     }
 
     public function items(): array{
-        $cart = $this->raw();
+        $cart =
+            $this->raw();
 
         $items = [];
 
-        foreach ($cart as $productId => $quantity) {
-            $product =
-                Product::findPublicById(
-                    (int) $productId
+        foreach ($cart as $key => $entry) {
+
+            if (!is_array($entry)) {
+                unset($cart[$key]);
+                continue;
+            }
+
+            $productId =
+                (int) (
+                    $entry['product_id']
+                    ?? 0
                 );
 
-            /*
-             * Si el producto fue eliminado o desactivado,
-             * dejamos de mostrarlo en el carrito.
-             */
-            if (!$product) {
+            $variantId =
+                isset($entry['variant_id'])
+                && $entry['variant_id'] !== null
+                    ? (int) $entry['variant_id']
+                    : null;
+
+            $quantity =
+                (int) (
+                    $entry['quantity']
+                    ?? 0
+                );
+
+            $product =
+                Product::findPublicById(
+                    $productId
+                );
+
+            if (
+                !$product
+                || $quantity <= 0
+            ) {
                 $this->remove(
-                    (int) $productId
+                    $productId,
+                    $variantId
                 );
 
                 continue;
             }
 
-            $quantity =
-                (int) $quantity;
+            $variant = null;
 
-            /*
-             * Si el stock cambió desde que se agregó,
-             * ajustamos la cantidad al máximo disponible.
-             */
-            if ($quantity > (int) $product->stock) {
-                $quantity =
-                    (int) $product->stock;
+            if ($variantId !== null) {
+                $variant =
+                    ProductVariant::findPublicForProduct(
+                        $variantId,
+                        $productId
+                    );
 
-                if ($quantity <= 0) {
+                if (!$variant) {
                     $this->remove(
-                        (int) $productId
+                        $productId,
+                        $variantId
                     );
 
                     continue;
                 }
 
+                $stock =(int) $variant->stock;
+
+                $unitPrice =
+                    $variant->finalPrice(
+                        $product
+                    );
+
+            } else {
+                $stock =(int) $product->stock;
+
+                $unitPrice =(float) $product->price;
+            }
+
+            if ($stock <= 0) {
+                $this->remove(
+                    $productId,
+                    $variantId
+                );
+
+                continue;
+            }
+
+            if ($quantity > $stock) {
+                $quantity = $stock;
+
                 $this->update(
-                    (int) $productId,
+                    $productId,
+                    $variantId,
                     $quantity
                 );
             }
 
             $items[] = [
-                'product' =>
-                    $product,
-
-                'quantity' =>
-                    $quantity,
-
-                'subtotal' =>
-                    (float) $product->price
-                    * $quantity,
+                'product' =>$product,
+                'variant' =>$variant,
+                'quantity' =>$quantity,
+                'unit_price' =>$unitPrice,
+                'subtotal' =>$unitPrice * $quantity,
             ];
         }
-
         return $items;
     }
 
     public function count(): int{
-        return array_sum(
-            array_map(
-                'intval',
-                $this->raw()
-            )
-        );
+        $count = 0;
+
+        foreach ($this->raw() as $entry) {
+            if (is_array($entry)) {
+                $count +=
+                    (int) (
+                        $entry['quantity']
+                        ?? 0
+                    );
+            }
+        }
+        return $count;
     }
 
     public function subtotal(): float{
@@ -210,5 +358,16 @@ class CartService{
         }
 
         return $subtotal;
+    }
+
+    private function key(
+        int $productId,
+        ?int $variantId
+    ): string {
+        return sprintf(
+            '%d:%d',
+            $productId,
+            $variantId ?? 0
+        );
     }
 }
