@@ -81,6 +81,17 @@ $warning = session('warning');
                             style="object-fit: cover;"
                         >
 
+                        <?php if ($item['variant']): ?>
+                            <small>
+                                <?= htmlspecialchars(
+                                    (string) $item['variant']->name,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+                            </small>
+
+                        <?php endif; ?>
+
                     <?php else: ?>
                         Sin imagen
                     <?php endif; ?>
@@ -107,7 +118,7 @@ $warning = session('warning');
 
                 <td>
                     Q <?= number_format(
-                        (float) $product->price,
+                        (float) $item['unit_price'],
                         2
                     ) ?>
                 </td>
@@ -127,8 +138,11 @@ $warning = session('warning');
 
                         <input
                             type="hidden"
-                            name="product_id"
-                            value="<?= (int) $product->id ?>"
+                            name="variant_id"
+                            value="<?= $item['variant']
+                                ? (int) $item['variant']->id
+                                : ''
+                            ?>"
                         >
 
                         <input
@@ -167,13 +181,13 @@ $warning = session('warning');
 
                         <input
                             type="hidden"
-                            name="product_id"
-                            value="<?= (int) $product->id ?>"
+                            name="variant_id"
+                            value="<?= $item['variant']
+                                ? (int) $item['variant']->id
+                                : ''
+                            ?>"
                         >
-
-                        <button type="submit">
-                            Eliminar
-                        </button>
+                        <button type="submit">Eliminar</button>
                     </form>
                 </td>
 
