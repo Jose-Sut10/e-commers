@@ -7,6 +7,7 @@ use Core\Session;
 use App\Models\Product;
 use App\Models\Company;
 use App\Services\CartService;
+use App\Models\ProductVariant;
 
 class CartController extends Controller{
     public function index(): void{
@@ -50,22 +51,49 @@ class CartController extends Controller{
             ]
         );
 
-        if (
-            !$productId
-            || !$quantity
-        ) {
+        if (!$productId || !$quantity) {
             Session::flash(
                 'warning',
                 'Los datos del producto no son válidos.'
             );
-
             redirect('tienda');
         }
 
-        $product =
-            Product::findPublicById(
-                $productId
-            );
+        $product = Product::findPublicById($productId);
+
+        $variantId = filter_var(
+            $input['variant_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        $variant = null;
+
+        if ($variantId) {
+            $variant =
+                ProductVariant::findPublicForProduct(
+                    (int) $variantId,
+                    (int) $product->id
+                );
+
+            if (!$variant) {
+                Session::flash(
+                    'warning',
+                    'La variante seleccionada no está disponible.'
+                );
+
+                redirect(
+                    'producto?slug='
+                    . urlencode(
+                        (string) $product->slug
+                    )
+                );
+            }
+        }
 
         if (!$product) {
             Session::flash(
@@ -82,7 +110,8 @@ class CartController extends Controller{
 
             $cart->add(
                 $product,
-                $quantity
+                $quantity,
+                $variant
             );
 
             Session::flash(
@@ -108,12 +137,20 @@ class CartController extends Controller{
     }
 
     public function update(): void{
-        $request = new Request();
-        $input = $request->all();
+        $request =
+            new Request();
+
+        $input =
+            $request->all();
 
         $productId = filter_var(
             $input['product_id'] ?? null,
-            FILTER_VALIDATE_INT
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
         );
 
         $quantity = filter_var(
@@ -126,32 +163,69 @@ class CartController extends Controller{
             ]
         );
 
+        /*
+        * La variante es opcional.
+        * Si viene vacía significa que
+        * es un producto sin variantes.
+        */
+        $variantId = null;
+
+        if (
+            isset($input['variant_id'])
+            && $input['variant_id'] !== ''
+        ) {
+            $variantValue = filter_var(
+                $input['variant_id'],
+                FILTER_VALIDATE_INT,
+                [
+                    'options' => [
+                        'min_range' => 1,
+                    ],
+                ]
+            );
+
+            if (!$variantValue) {
+                Session::flash(
+                    'warning',
+                    'La variante indicada no es válida.'
+                );
+
+                redirect('carrito');
+            }
+
+            $variantId =
+                (int) $variantValue;
+        }
+
         if (
             !$productId
             || $quantity === false
         ) {
             Session::flash(
                 'warning',
-                'La cantidad indicada no es válida.'
+                'Los datos del carrito no son válidos.'
             );
 
             redirect('carrito');
         }
 
         try {
-            (
-                new CartService()
-            )->update(
+            $cart =
+                new CartService();
+
+            $cart->update(
                 (int) $productId,
+                $variantId,
                 (int) $quantity
             );
 
             Session::flash(
                 'success',
-                'El carrito fue actualizado.'
+                'El carrito fue actualizado correctamente.'
             );
 
         } catch (Throwable $exception) {
+
             Session::flash(
                 'warning',
                 $exception->getMessage()
@@ -161,26 +235,84 @@ class CartController extends Controller{
         redirect('carrito');
     }
 
+
     public function remove(): void{
-        $request = new Request();
+        $request =
+            new Request();
+
+        $input =
+            $request->all();
 
         $productId = filter_var(
-            $request->input(
-                'product_id'
-            ),
-            FILTER_VALIDATE_INT
+            $input['product_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
         );
 
-        if ($productId) {
-            (
-                new CartService()
-            )->remove(
-                (int) $productId
+        /*
+        * La variante es opcional.
+        */
+        $variantId = null;
+
+        if (
+            isset($input['variant_id'])
+            && $input['variant_id'] !== ''
+        ) {
+            $variantValue = filter_var(
+                $input['variant_id'],
+                FILTER_VALIDATE_INT,
+                [
+                    'options' => [
+                        'min_range' => 1,
+                    ],
+                ]
+            );
+
+            if (!$variantValue) {
+                Session::flash(
+                    'warning',
+                    'La variante indicada no es válida.'
+                );
+
+                redirect('carrito');
+            }
+
+            $variantId =
+                (int) $variantValue;
+        }
+
+        if (!$productId) {
+            Session::flash(
+                'warning',
+                'El producto indicado no es válido.'
+            );
+
+            redirect('carrito');
+        }
+
+        try {
+            $cart =
+                new CartService();
+
+            $cart->remove(
+                (int) $productId,
+                $variantId
             );
 
             Session::flash(
                 'success',
                 'El producto fue eliminado del carrito.'
+            );
+
+        } catch (Throwable $exception) {
+
+            Session::flash(
+                'warning',
+                $exception->getMessage()
             );
         }
 
