@@ -115,6 +115,7 @@ $warning = session('warning');
             <th>Precio</th>
             <th>Cantidad</th>
             <th>Subtotal</th>
+            <th>Variante</th>
         </tr>
     </thead>
 
@@ -159,6 +160,17 @@ $warning = session('warning');
                 </td>
 
             </tr>
+
+            <td>
+                <?= htmlspecialchars(
+                    (string) (
+                        $item->variant_name
+                        ?: 'Producto base'
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </td>
 
         <?php endforeach; ?>
 

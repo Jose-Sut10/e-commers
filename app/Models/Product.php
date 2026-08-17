@@ -80,24 +80,36 @@ class Product extends Model{
     }
 
     //catalogo publico
-    public static function publicCatalog(?string $categorySlug = null): array{
+    public static function publicCatalog(
+        ?string $categorySlug = null,
+        ?string $search = null
+    ): array {
         $instance = new static();
 
         $sql = "
             SELECT
                 products.*,
+
                 categories.name AS category_name,
                 categories.slug AS category_slug,
 
-                COALESCE(
-                    (
-                        SELECT SUM(product_variants.stock)
-                        FROM product_variants
-                        WHERE product_variants.product_id = products.id
-                        AND product_variants.active = 1
-                    ),
-                    products.stock
-                ) AS available_stock
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM product_variants pv
+                        WHERE pv.product_id = products.id
+                    )
+                    THEN COALESCE(
+                        (
+                            SELECT SUM(pv2.stock)
+                            FROM product_variants pv2
+                            WHERE pv2.product_id = products.id
+                            AND pv2.active = 1
+                        ),
+                        0
+                    )
+                    ELSE products.stock
+                END AS available_stock,
 
                 (
                     SELECT product_images.path
@@ -131,6 +143,25 @@ class Product extends Model{
             $params[] = $categorySlug;
         }
 
+        if (
+            $search !== null
+            && $search !== ''
+        ) {
+            $sql .= "
+                AND (
+                    products.name LIKE ?
+                    OR products.sku LIKE ?
+                    OR products.description LIKE ?
+                )
+            ";
+
+            $term = '%' . $search . '%';
+
+            $params[] = $term;
+            $params[] = $term;
+            $params[] = $term;
+        }
+
         $sql .= "
             ORDER BY products.name ASC
         ";
@@ -147,25 +178,36 @@ class Product extends Model{
         );
     }
 
-    public static function findPublicBySlug(string $slug): ?static{
+    public static function findPublicBySlug(
+        string $slug
+    ): ?static {
         $instance = new static();
 
         $row = Database::first(
             "
             SELECT
                 products.*,
+
                 categories.name AS category_name,
                 categories.slug AS category_slug,
 
-                COALESCE(
-                    (
-                        SELECT SUM(product_variants.stock)
-                        FROM product_variants
-                        WHERE product_variants.product_id = products.id
-                        AND product_variants.active = 1
-                    ),
-                    products.stock
-                ) AS available_stock
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM product_variants pv
+                        WHERE pv.product_id = products.id
+                    )
+                    THEN COALESCE(
+                        (
+                            SELECT SUM(pv2.stock)
+                            FROM product_variants pv2
+                            WHERE pv2.product_id = products.id
+                            AND pv2.active = 1
+                        ),
+                        0
+                    )
+                    ELSE products.stock
+                END AS available_stock,
 
                 (
                     SELECT product_images.path
@@ -201,24 +243,36 @@ class Product extends Model{
     }
 
     //carrito de compras
-    public static function findPublicById(int $id): ?static {
+    public static function findPublicById(
+        int $id
+    ): ?static {
         $instance = new static();
 
         $row = Database::first(
             "
             SELECT
                 products.*,
-                categories.name AS category_name,
 
-                COALESCE(
-                    (
-                        SELECT SUM(product_variants.stock)
-                        FROM product_variants
-                        WHERE product_variants.product_id = products.id
-                        AND product_variants.active = 1
-                    ),
-                    products.stock
-                ) AS available_stock
+                categories.name AS category_name,
+                categories.slug AS category_slug,
+
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM product_variants pv
+                        WHERE pv.product_id = products.id
+                    )
+                    THEN COALESCE(
+                        (
+                            SELECT SUM(pv2.stock)
+                            FROM product_variants pv2
+                            WHERE pv2.product_id = products.id
+                            AND pv2.active = 1
+                        ),
+                        0
+                    )
+                    ELSE products.stock
+                END AS available_stock,
 
                 (
                     SELECT product_images.path
@@ -247,7 +301,10 @@ class Product extends Model{
         if (!$row) {
             return null;
         }
-        return $instance->newFromDatabase($row);
+
+        return $instance->newFromDatabase(
+            $row
+        );
     }
 
     //checkout y pedidos
