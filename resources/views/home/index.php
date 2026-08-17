@@ -118,10 +118,7 @@
                 ?>
             </strong>
 
-            <p>
-                Productos con 5 unidades
-                o menos.
-            </p>
+            <p> Productos o variantes con 5 unidades o menos.</p>
 
         </article>
     </div>
@@ -265,86 +262,144 @@
         </a>
     </p>
 </section>
-<!-- =====================================================
-     PRODUCTOS CON POCO STOCK
-===================================================== -->
-<section class="dashboard-section">
 
-    <h2>Productos con poco stock</h2>
+<!-- =====================================================
+     PRODUCTOS Y VARIANTES CON POCO STOCK
+===================================================== -->
+
+<section class="dashboard-section">
+    <h2>Existencias bajas</h2>
 
     <?php if (empty($lowStockProducts)): ?>
-        <p>No hay productos con existencias bajas.</p>
-    <?php else: ?>
+        <p>
+            No hay productos ni variantes
+            con existencias bajas.
+        </p>
 
+    <?php else: ?>
         <table>
             <thead>
                 <tr>
                     <th>Producto</th>
+                    <th>Variante</th>
                     <th>SKU</th>
                     <th>Categoría</th>
                     <th>Existencias</th>
-                    <th></th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
 
             <tbody>
                 <?php foreach (
-                    $lowStockProducts as $product
+                    $lowStockProducts
+                    as $item
                 ): ?>
-
                     <tr>
+                        <!-- PRODUCTO -->
+                        <td>
+                            <?= htmlspecialchars(
+                                (string)
+                                $item['product_name'],
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+
+                        </td>
+                        <!-- VARIANTE -->
+                        <td>
+
+                            <?php if (
+                                $item['stock_type']
+                                === 'variant'
+                            ): ?>
+
+                                <?= htmlspecialchars(
+                                    (string)
+                                    $item['variant_name'],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+
+                            <?php else: ?>
+
+                                <span>
+                                    Producto base
+                                </span>
+
+                            <?php endif; ?>
+
+                        </td>
+
+                        <!-- SKU -->
 
                         <td>
                             <?= htmlspecialchars(
                                 (string)
-                                $product['name'],
+                                $item['sku'],
                                 ENT_QUOTES,
                                 'UTF-8'
                             ) ?>
                         </td>
 
+                        <!-- CATEGORÍA -->
+
                         <td>
                             <?= htmlspecialchars(
                                 (string)
-                                $product['sku'],
+                                $item['category_name'],
                                 ENT_QUOTES,
                                 'UTF-8'
                             ) ?>
                         </td>
 
-                        <td>
-                            <?= htmlspecialchars(
-                                (string)
-                                $product['category_name'],
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>
-                        </td>
+                        <!-- STOCK -->
 
                         <td>
                             <strong>
+
                                 <?= (int)
-                                    $product['stock']
+                                    $item['stock']
                                 ?>
                             </strong>
                         </td>
 
-                        <td>
+                        <!-- ACCIONES -->
 
+                        <td>
                             <a href="<?= htmlspecialchars(
                                 url(
                                     'inventario?id='
                                     . (int)
-                                    $product['id']
+                                    $item['product_id']
                                 ),
                                 ENT_QUOTES,
                                 'UTF-8'
                             ) ?>">
+
                                 Inventario
                             </a>
+
+                            <?php if (
+                                $item['stock_type']
+                                === 'variant'
+                            ): ?>
+
+                                &nbsp;|&nbsp;
+
+                                <a href="<?= htmlspecialchars(
+                                    url(
+                                        'productos/variantes?id='
+                                        . (int)
+                                        $item['product_id']
+                                    ),
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>">
+                                    Variantes
+                                </a>
+                            <?php endif; ?>
                         </td>
                     </tr>
-
                 <?php endforeach; ?>
             </tbody>
         </table>
