@@ -66,18 +66,37 @@ class ProductVariant extends Model{
         );
     }
 
-    public function finalPrice(
-        Product $product
-    ): float {
-        if (
-            $this->price !== null
-            && $this->price !== ''
-        ) {
-            return (float) $this->price;
+
+    public static function findBySkuExceptId(
+        string $sku,
+        int $exceptId
+    ): ?static {
+        $instance = new static();
+
+        $row = Database::first(
+            "SELECT *
+             FROM `product_variants`
+             WHERE `sku` = ?
+             AND `id` != ?
+             LIMIT 1",
+            [
+                strtoupper(
+                    trim($sku)
+                ),
+
+                $exceptId,
+            ]
+        );
+
+        if (!$row) {
+            return null;
         }
 
-        return (float) $product->price;
+        return $instance->newFromDatabase(
+            $row
+        );
     }
+
 
     public static function findForProduct(
         int $variantId,
@@ -87,10 +106,10 @@ class ProductVariant extends Model{
 
         $row = Database::first(
             "SELECT *
-            FROM `product_variants`
-            WHERE `id` = ?
-            AND `product_id` = ?
-            LIMIT 1",
+             FROM `product_variants`
+             WHERE `id` = ?
+             AND `product_id` = ?
+             LIMIT 1",
             [
                 $variantId,
                 $productId,
@@ -111,15 +130,15 @@ class ProductVariant extends Model{
     ): bool {
         $row = Database::first(
             "SELECT `id`
-            FROM `product_variants`
-            WHERE `product_id` = ?
-            LIMIT 1",
+             FROM `product_variants`
+             WHERE `product_id` = ?
+             LIMIT 1",
             [$productId]
         );
+
         return $row !== null;
     }
 
-    //variantes en compras
     public static function findPublicForProduct(
         int $variantId,
         int $productId
@@ -127,22 +146,26 @@ class ProductVariant extends Model{
         $instance = new static();
 
         $row = Database::first(
-            "SELECT product_variants.*
-            FROM product_variants
+            "SELECT
+                product_variants.*
 
-            INNER JOIN products
-                ON products.id = product_variants.product_id
+             FROM product_variants
 
-            INNER JOIN categories
-                ON categories.id = products.category_id
+             INNER JOIN products
+                ON products.id =
+                   product_variants.product_id
 
-            WHERE product_variants.id = ?
-            AND product_variants.product_id = ?
-            AND product_variants.active = 1
-            AND products.active = 1
-            AND categories.active = 1
+             INNER JOIN categories
+                ON categories.id =
+                   products.category_id
 
-            LIMIT 1",
+             WHERE product_variants.id = ?
+             AND product_variants.product_id = ?
+             AND product_variants.active = 1
+             AND products.active = 1
+             AND categories.active = 1
+
+             LIMIT 1",
             [
                 $variantId,
                 $productId,
@@ -152,8 +175,9 @@ class ProductVariant extends Model{
         if (!$row) {
             return null;
         }
-
-        return $instance->newFromDatabase($row);
+        return $instance->newFromDatabase(
+            $row
+        );
     }
 
     public static function findPublicForUpdate(
@@ -163,23 +187,27 @@ class ProductVariant extends Model{
         $instance = new static();
 
         $row = Database::first(
-            "SELECT product_variants.*
-            FROM product_variants
+            "SELECT
+                product_variants.*
 
-            INNER JOIN products
-                ON products.id = product_variants.product_id
+             FROM product_variants
 
-            INNER JOIN categories
-                ON categories.id = products.category_id
+             INNER JOIN products
+                ON products.id =
+                   product_variants.product_id
 
-            WHERE product_variants.id = ?
-            AND product_variants.product_id = ?
-            AND product_variants.active = 1
-            AND products.active = 1
-            AND categories.active = 1
+             INNER JOIN categories
+                ON categories.id =
+                   products.category_id
 
-            LIMIT 1
-            FOR UPDATE",
+             WHERE product_variants.id = ?
+             AND product_variants.product_id = ?
+             AND product_variants.active = 1
+             AND products.active = 1
+             AND categories.active = 1
+
+             LIMIT 1
+             FOR UPDATE",
             [
                 $variantId,
                 $productId,
@@ -190,6 +218,64 @@ class ProductVariant extends Model{
             return null;
         }
 
-        return $instance->newFromDatabase($row);
+        return $instance->newFromDatabase(
+            $row
+        );
+    }
+
+    public function finalPrice(
+        Product $product
+    ): float {
+        if (
+            $this->price !== null
+            && $this->price !== ''
+        ) {
+            return (float) $this->price;
+        }
+
+        return (float) $product->price;
+    }
+
+    public function hasInventoryHistory(): bool{
+        $row = Database::first(
+            "SELECT `id`
+             FROM `inventory_movements`
+             WHERE `variant_id` = ?
+             LIMIT 1",
+            [
+                (int) $this->id,
+            ]
+        );
+
+        return $row !== null;
+    }
+
+    public function hasOrderHistory(): bool{
+        $row = Database::first(
+            "SELECT `id`
+             FROM `order_items`
+             WHERE `variant_id` = ?
+             LIMIT 1",
+            [
+                (int) $this->id,
+            ]
+        );
+
+        return $row !== null;
+    }
+
+    public function canDelete(): bool{
+        if ((int) $this->stock > 0) {
+            return false;
+        }
+
+        if ($this->hasInventoryHistory()) {
+            return false;
+        }
+
+        if ($this->hasOrderHistory()) {
+            return false;
+        }
+        return true;
     }
 }
