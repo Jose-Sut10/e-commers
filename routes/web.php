@@ -266,3 +266,18 @@ $router->post('/productos/variantes', [
     ProductVariantController::class,
     'store'
 ]);
+
+$router->get('/productos/variantes/editar', [
+    ProductVariantController::class,
+    'edit'
+]);
+
+$router->post('/productos/variantes/actualizar', [
+    ProductVariantController::class,
+    'update'
+]);
+
+$router->post('/productos/variantes/eliminar', [
+    ProductVariantController::class,
+    'destroy'
+]);
