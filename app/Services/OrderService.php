@@ -23,6 +23,14 @@ class OrderService{
         Database::beginTransaction();
 
         try {
+
+                $customerModel =
+            (
+                new CustomerService()
+            )->findOrCreate(
+                $customer
+            );
+
             $items = [];
             $subtotal = 0.0;
 
@@ -131,17 +139,16 @@ class OrderService{
             $number = $this->generateNumber();
 
             $order = new Order([
-                'number' =>
-                    $number,
-
+                'customer_id' => (int) $customerModel->id,
+                'number' => $number,
                 'customer_name' => $customer['name'],
                 'customer_phone' => $customer['phone'],
                 'customer_email' => $customer['email'],
-                'customer_address' =>  $customer['address'],
-                'notes' =>  $customer['notes'],
-                'subtotal' =>  $subtotal,
+                'customer_address' => $customer['address'],
+                'notes' => $customer['notes'],
+                'subtotal' => $subtotal,
                 'total' => $subtotal,
-                'status' => 'pending',
+                'status' =>'pending',
             ]);
 
             if (!$order->save()) {

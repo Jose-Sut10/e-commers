@@ -27,6 +27,11 @@ return [
         'icon' => '□',
     ],
     [
+    'label' => 'Clientes',
+    'route' => '/clientes',
+    'icon' => '♙',
+    ],
+    [
         'label' => 'Pedidos',
         'route' => '/pedidos',
         'icon' => '☷',

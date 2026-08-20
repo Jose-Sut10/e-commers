@@ -11,6 +11,7 @@ use App\Controllers\CartController;
 use App\Controllers\CheckoutController;
 use App\Controllers\OrderController;
 use App\Controllers\ProductVariantController;
+use App\Controllers\CustomerController;
 
 $router->get('/', [
     HomeController::class,
@@ -280,4 +281,15 @@ $router->post('/productos/variantes/actualizar', [
 $router->post('/productos/variantes/eliminar', [
     ProductVariantController::class,
     'destroy'
+]);
+
+//Historial compras
+$router->get('/clientes', [
+    CustomerController::class,
+    'index'
+]);
+
+$router->get('/clientes/ver', [
+    CustomerController::class,
+    'show'
 ]);

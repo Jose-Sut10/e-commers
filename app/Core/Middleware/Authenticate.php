@@ -16,6 +16,7 @@ class Authenticate implements Middleware{
         '/productos',
         '/inventario',
         '/pedidos',
+        '/clientes',
     ];
 
     public function handle(Request $request): void{
