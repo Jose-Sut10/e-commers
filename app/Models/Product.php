@@ -2,6 +2,7 @@
 namespace App\Models;
 use Core\Model;
 use Core\Database;
+use Core\Pagination\Paginator;
 
 class Product extends Model{
     protected string $table = 'products';
@@ -334,6 +335,277 @@ class Product extends Model{
         }
         return $instance->newFromDatabase(
             $row
+        );
+    }
+
+    //filtros de busqueda
+    public static function paginateAdmin(
+        array $filters = [],
+        int $page = 1,
+        int $perPage = 15
+    ): Paginator {
+
+        $page =
+            max(1, $page);
+
+        $perPage =
+            max(
+                5,
+                min(
+                    $perPage,
+                    100
+                )
+            );
+
+        /*
+        * Creamos primero un catálogo interno
+        * que calcula correctamente el stock,
+        * incluyendo productos con variantes.
+        */
+
+        $sql = "
+            FROM
+            (
+                SELECT
+
+                    products.*,
+
+                    categories.name
+                        AS category_name,
+
+                    CASE
+
+                        WHEN EXISTS (
+                            SELECT 1
+
+                            FROM product_variants pv
+
+                            WHERE pv.product_id =
+                                products.id
+                        )
+
+                        THEN COALESCE(
+                            (
+                                SELECT
+                                    SUM(pv2.stock)
+
+                                FROM product_variants pv2
+
+                                WHERE pv2.product_id =
+                                    products.id
+
+                                AND pv2.active = 1
+                            ),
+                            0
+                        )
+
+                        ELSE products.stock
+
+                    END AS available_stock,
+
+
+                    (
+                        SELECT
+                            product_images.path
+
+                        FROM product_images
+
+                        WHERE product_images.product_id =
+                            products.id
+
+                        ORDER BY
+                            product_images.is_primary DESC,
+                            product_images.id ASC
+
+                        LIMIT 1
+
+                    ) AS image_path
+
+                FROM products
+
+                INNER JOIN categories
+                    ON categories.id =
+                    products.category_id
+
+            ) AS catalog
+
+            WHERE 1 = 1
+        ";
+
+        $params = [];
+
+        /* * BUSCADOR*/
+
+        $search = trim(
+            (string) (
+                $filters['q']
+                ?? ''
+            )
+        );
+
+        if ($search !== '') {
+
+            $sql .= "
+                AND (
+                    catalog.name LIKE ?
+                    OR catalog.sku LIKE ?
+                    OR catalog.description LIKE ?
+                )
+            ";
+
+            $term =
+                '%' . $search . '%';
+
+            $params[] = $term;
+            $params[] = $term;
+            $params[] = $term;
+        }
+
+        /*
+        * CATEGORÍA
+        */
+
+        $categoryId =
+            (int) (
+                $filters['category_id']
+                ?? 0
+            );
+
+
+        if ($categoryId > 0) {
+
+            $sql .= "
+                AND catalog.category_id = ?
+            ";
+
+            $params[] =
+                $categoryId;
+        }
+
+        /*
+        * ESTADO
+        */
+
+        $active =
+            $filters['active']
+            ?? '';
+
+
+        if (
+            $active === '1'
+            || $active === '0'
+        ) {
+
+            $sql .= "
+                AND catalog.active = ?
+            ";
+
+            $params[] =
+                (int) $active;
+        }
+
+        /*
+        * STOCK
+        */
+
+        $stock =
+            $filters['stock']
+            ?? '';
+
+        if ($stock === 'out') {
+
+            $sql .= "
+                AND catalog.available_stock = 0
+            ";
+
+        } elseif ($stock === 'low') {
+
+            $sql .= "
+                AND catalog.available_stock > 0
+                AND catalog.available_stock <= 5
+            ";
+
+        } elseif ($stock === 'available') {
+
+            $sql .= "
+                AND catalog.available_stock > 5
+            ";
+        }
+
+        /*
+        * TOTAL
+        */
+
+        $countRow =
+            Database::first(
+                "
+                SELECT COUNT(*) AS total
+                {$sql}
+                ",
+                $params
+            );
+
+        $total =
+            (int) (
+                $countRow['total']
+                ?? 0
+            );
+
+        $lastPage =
+            max(
+                1,
+                (int) ceil(
+                    $total
+                    / $perPage
+                )
+            );
+
+        $page =
+            min(
+                $page,
+                $lastPage
+            );
+
+        $offset =
+            ($page - 1)
+            * $perPage;
+
+        /*
+        * RESULTADOS
+        */
+
+        $rows =
+            Database::select(
+                "
+                SELECT *
+                {$sql}
+
+                ORDER BY catalog.id DESC
+
+                LIMIT {$perPage}
+                OFFSET {$offset}
+                ",
+                $params
+            );
+
+
+        $instance =
+            new static();
+
+        $items =
+            array_map(
+                fn (array $row) =>
+                    $instance->newFromDatabase(
+                        $row
+                    ),
+                $rows
+            );
+
+        return new Paginator(
+            $items,
+            $total,
+            $perPage,
+            $page
         );
     }
 }
