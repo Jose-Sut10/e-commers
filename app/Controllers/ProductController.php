@@ -14,12 +14,75 @@ use App\Services\ImageUploadService;
 
 class ProductController extends Controller{
     public function index(): void{
-        view('products/index', [
-            'title' => 'Productos',
+        $page = filter_var(
+            $_GET['page'] ?? 1,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
 
-            'products' =>
-                Product::allWithCategory(),
-        ]);
+        if (!$page) {
+            $page = 1;
+        }
+
+        $filters = [
+
+            'q' =>
+                trim(
+                    (string) (
+                        $_GET['q']
+                        ?? ''
+                    )
+                ),
+
+            'category_id' =>
+                trim(
+                    (string) (
+                        $_GET['category_id']
+                        ?? ''
+                    )
+                ),
+
+            'active' =>
+                trim(
+                    (string) (
+                        $_GET['active']
+                        ?? ''
+                    )
+                ),
+
+            'stock' =>
+                trim(
+                    (string) (
+                        $_GET['stock']
+                        ?? ''
+                    )
+                ),
+        ];
+
+        view(
+            'products/index',
+            [
+                'title' =>
+                    'Productos',
+
+                'paginator' =>
+                    Product::paginateAdmin(
+                        $filters,
+                        (int) $page,
+                        15
+                    ),
+
+                'categories' =>
+                    Category::all(),
+
+                'filters' =>
+                    $filters,
+            ]
+        );
     }
 
     public function create(): void{
