@@ -10,13 +10,72 @@ use App\Services\OrderService;
 
 class OrderController extends Controller{
     public function index(): void{
-        view('orders/index', [
-            'title' =>
-                'Pedidos',
+        $page = filter_var(
+            $_GET['page'] ?? 1,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
 
-            'orders' =>
-                Order::allLatest(),
-        ]);
+        if (!$page) {
+            $page = 1;
+        }
+
+        $filters = [
+
+            'q' =>
+                trim(
+                    (string) (
+                        $_GET['q']
+                        ?? ''
+                    )
+                ),
+
+            'status' =>
+                trim(
+                    (string) (
+                        $_GET['status']
+                        ?? ''
+                    )
+                ),
+
+            'date_from' =>
+                trim(
+                    (string) (
+                        $_GET['date_from']
+                        ?? ''
+                    )
+                ),
+
+            'date_to' =>
+                trim(
+                    (string) (
+                        $_GET['date_to']
+                        ?? ''
+                    )
+                ),
+        ];
+
+        view(
+            'orders/index',
+            [
+                'title' =>
+                    'Pedidos',
+
+                'paginator' =>
+                    Order::paginateAdmin(
+                        $filters,
+                        (int) $page,
+                        15
+                    ),
+
+                'filters' =>
+                    $filters,
+            ]
+        );
     }
 
     public function show(): void{
