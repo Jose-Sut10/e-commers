@@ -12,6 +12,7 @@ use App\Controllers\CheckoutController;
 use App\Controllers\OrderController;
 use App\Controllers\ProductVariantController;
 use App\Controllers\CustomerController;
+use App\Controllers\PromotionController;
 
 $router->get('/', [
     HomeController::class,
@@ -292,4 +293,20 @@ $router->get('/clientes', [
 $router->get('/clientes/ver', [
     CustomerController::class,
     'show'
+]);
+
+//promos
+$router->get('/productos/promocion', [
+    PromotionController::class,
+    'show'
+]);
+
+$router->post('/productos/promocion', [
+    PromotionController::class,
+    'updateProduct'
+]);
+
+$router->post('/productos/promocion/variante', [
+    PromotionController::class,
+    'updateVariant'
 ]);
