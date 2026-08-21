@@ -337,3 +337,14 @@ $router->post('/cupones/actualizar', [
     CouponController::class,
     'update'
 ]);
+
+//cupones
+$router->post('/checkout/cupon', [
+    CheckoutController::class,
+    'applyCoupon'
+]);
+
+$router->post('/checkout/cupon/quitar', [
+    CheckoutController::class,
+    'removeCoupon'
+]);

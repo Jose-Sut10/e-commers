@@ -177,6 +177,49 @@ $warning = session('warning');
     </tbody>
 </table>
 
+<p>
+    Subtotal:
+    <strong>
+        Q <?= number_format(
+            (float) $order->subtotal,
+            2
+        ) ?>
+    </strong>
+</p>
+
+<?php if (
+    (float)
+    $order->discount_total > 0
+): ?>
+
+    <p>
+        Cupón:
+        <strong>
+            <?= htmlspecialchars(
+                (string) (
+                    $order->coupon_code
+                    ?: '-'
+                ),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
+        </strong>
+    </p>
+
+    <p>
+        Descuento:
+        <strong>
+            - Q <?= number_format(
+                (float)
+                $order->discount_total,
+                2
+            ) ?>
+        </strong>
+
+    </p>
+
+<?php endif; ?>
+
 <h2>
     Total:
     Q <?= number_format(

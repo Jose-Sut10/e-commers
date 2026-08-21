@@ -72,6 +72,101 @@
     ) ?>
 </h2>
 
+<section class="dashboard-section">
+    <h2>Cupón de descuento</h2>
+
+    <?php if (
+        !empty(
+            $couponResult['coupon']
+        )
+    ): ?>
+        <p>
+            Cupón aplicado:
+
+            <strong>
+                <?= htmlspecialchars(
+                    (string)
+                    $couponResult['code'],
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </strong>
+        </p>
+
+        <p>
+            Subtotal:
+
+            Q <?= number_format(
+                (float)
+                $couponResult['subtotal'],
+                2
+            ) ?>
+        </p>
+
+        <p>
+            Descuento:
+
+            <strong>
+                - Q <?= number_format(
+                    (float)
+                    $couponResult['discount'],
+                    2
+                ) ?>
+            </strong>
+        </p>
+
+        <h2>
+            Total:
+            Q <?= number_format(
+                (float)
+                $couponResult['total'],
+                2
+            ) ?>
+        </h2>
+
+        <form
+            method="POST"
+            action="<?= htmlspecialchars(
+                url(
+                    'checkout/cupon/quitar'
+                ),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
+        >
+            <?= csrf_field() ?>
+
+            <button type="submit">Quitar cupón</button>
+        </form>
+
+    <?php else: ?>
+
+        <form
+            method="POST"
+            action="<?= htmlspecialchars(
+                url('checkout/cupon'),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
+        >
+            <?= csrf_field() ?>
+
+            <div>
+                <label for="coupon_code">Código</label>
+
+                <input
+                    id="coupon_code"
+                    type="text"
+                    name="coupon_code"
+                    maxlength="50"
+                    placeholder="CENTRO10"
+                >
+            </div>
+
+            <button type="submit">Aplicar cupón </button>
+        </form>
+    <?php endif; ?>
+</section>
 <hr>
 
 <h2>Datos del cliente</h2>
