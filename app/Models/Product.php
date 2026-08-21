@@ -608,4 +608,71 @@ class Product extends Model{
             $page
         );
     }
+
+    //promos
+    public function hasActiveSale(): bool{
+        if (
+            $this->sale_price === null
+            || $this->sale_price === ''
+        ) {
+            return false;
+        }
+
+        $regularPrice = (float) $this->price;
+        $salePrice = (float) $this->sale_price;
+
+        if ($salePrice >= $regularPrice) {
+            return false;
+        }
+
+        $now = time();
+
+        if (
+            $this->sale_starts_at
+            && strtotime(
+                (string) $this->sale_starts_at
+            ) > $now
+        ) {
+            return false;
+        }
+
+        if (
+            $this->sale_ends_at
+            && strtotime(
+                (string) $this->sale_ends_at
+            ) < $now
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    public function finalPrice(): float{
+        if ($this->hasActiveSale()) {
+            return (float) $this->sale_price;
+        }
+        return (float) $this->price;
+    }
+
+
+    public function discountPercentage(): int{
+        if (!$this->hasActiveSale()) {
+            return 0;
+        }
+
+        $regular = (float) $this->price;
+        $sale = (float) $this->sale_price;
+
+        if ($regular <= 0) {
+            return 0;
+        }
+
+        return (int) round(
+            (
+                ($regular - $sale)
+                / $regular
+            ) * 100
+        );
+    }
+
 }

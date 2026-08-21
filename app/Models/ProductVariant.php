@@ -223,9 +223,7 @@ class ProductVariant extends Model{
         );
     }
 
-    public function finalPrice(
-        Product $product
-    ): float {
+    public function basePrice(Product $product): float {
         if (
             $this->price !== null
             && $this->price !== ''
@@ -234,6 +232,91 @@ class ProductVariant extends Model{
         }
 
         return (float) $product->price;
+    }
+
+    public function hasActiveSale(
+        Product $product
+    ): bool {
+        if (
+            $this->sale_price === null
+            || $this->sale_price === ''
+        ) {
+            return false;
+        }
+
+        $regularPrice =
+            $this->basePrice(
+                $product
+            );
+
+        $salePrice = (float) $this->sale_price;
+
+        if ($salePrice >= $regularPrice) {
+            return false;
+        }
+
+        $now = time();
+
+        if (
+            $this->sale_starts_at
+            && strtotime(
+                (string)
+                $this->sale_starts_at
+            ) > $now
+        ) {
+            return false;
+        }
+
+        if (
+            $this->sale_ends_at
+            && strtotime(
+                (string)
+                $this->sale_ends_at
+            ) < $now
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function finalPrice(
+        Product $product
+    ): float {
+        /*
+        * Primero tiene prioridad una
+        * promoción propia de la variante.
+        */
+
+        if (
+            $this->hasActiveSale(
+                $product
+            )
+        ) {
+            return (float)
+                $this->sale_price;
+        }
+
+        /*
+        * Si la variante tiene precio propio,
+        * usamos ese precio.
+        */
+
+        if (
+            $this->price !== null
+            && $this->price !== ''
+        ) {
+            return (float)
+                $this->price;
+        }
+
+        /*
+        * Si no tiene precio propio,
+        * puede aprovechar la promoción
+        * general del producto.
+        */
+
+        return $product->finalPrice();
     }
 
     public function hasInventoryHistory(): bool{
@@ -246,7 +329,6 @@ class ProductVariant extends Model{
                 (int) $this->id,
             ]
         );
-
         return $row !== null;
     }
 
