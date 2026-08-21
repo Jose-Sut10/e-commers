@@ -13,6 +13,7 @@ use App\Controllers\OrderController;
 use App\Controllers\ProductVariantController;
 use App\Controllers\CustomerController;
 use App\Controllers\PromotionController;
+use App\Controllers\CouponController;
 
 $router->get('/', [
     HomeController::class,
@@ -309,4 +310,30 @@ $router->post('/productos/promocion', [
 $router->post('/productos/promocion/variante', [
     PromotionController::class,
     'updateVariant'
+]);
+
+//cupones
+$router->get('/cupones', [
+    CouponController::class,
+    'index'
+]);
+
+$router->get('/cupones/crear', [
+    CouponController::class,
+    'create'
+]);
+
+$router->post('/cupones', [
+    CouponController::class,
+    'store'
+]);
+
+$router->get('/cupones/editar', [
+    CouponController::class,
+    'edit'
+]);
+
+$router->post('/cupones/actualizar', [
+    CouponController::class,
+    'update'
 ]);
