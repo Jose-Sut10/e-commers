@@ -41,4 +41,9 @@ return [
         'route' => '/pedidos',
         'icon' => '☷',
     ],
+    [
+    'label' => 'Envíos',
+    'route' => '/envios',
+    'icon' => '↗',
+],
 ];

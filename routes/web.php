@@ -14,6 +14,7 @@ use App\Controllers\ProductVariantController;
 use App\Controllers\CustomerController;
 use App\Controllers\PromotionController;
 use App\Controllers\CouponController;
+use App\Controllers\ShippingMethodController;
 
 $router->get('/', [
     HomeController::class,
@@ -347,4 +348,20 @@ $router->post('/checkout/cupon', [
 $router->post('/checkout/cupon/quitar', [
     CheckoutController::class,
     'removeCoupon'
+]);
+
+//metodos de pago
+$router->get('/envios', [
+    ShippingMethodController::class,
+    'index'
+]);
+
+$router->post('/envios', [
+    ShippingMethodController::class,
+    'store'
+]);
+
+$router->post('/envios/actualizar', [
+    ShippingMethodController::class,
+    'update'
 ]);
