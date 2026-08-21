@@ -300,8 +300,7 @@ class CartService{
 
             } else {
                 $stock =(int) $product->stock;
-
-                $unitPrice =(float) $product->price;
+                $unitPrice = $product->finalPrice();
             }
 
             if ($stock <= 0) {

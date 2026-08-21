@@ -341,6 +341,18 @@ $products = $paginator->items();
                 ) ?>">
                     Inventario
                 </a>
+                |
+
+                <a href="<?= htmlspecialchars(
+                    url(
+                        'productos/promocion?id='
+                        . (int) $product->id
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>">
+                    Promoción
+                </a>
             </td>
         </tr>
     <?php endforeach; ?>

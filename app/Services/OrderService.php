@@ -116,7 +116,7 @@ class OrderService{
                         );
                     }
 
-                    $unitPrice =(float) $product->price;
+                    $unitPrice = $product->finalPrice();
                     $sku =(string) $product->sku;
                     $variantName =null;
                 }

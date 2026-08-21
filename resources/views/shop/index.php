@@ -132,12 +132,39 @@
                 </p>
 
                 <p>
-                    <strong>
-                        Q <?= number_format(
-                            (float) $product->price,
-                            2
-                        ) ?>
-                    </strong>
+                    <?php if ($product->hasActiveSale()): ?>
+                        <div class="product-price">
+
+                            <del>
+                                Q <?= number_format(
+                                    (float) $product->price,
+                                    2
+                                ) ?>
+                            </del>
+
+                            <strong class="sale-price">
+                                Q <?= number_format(
+                                    $product->finalPrice(),
+                                    2
+                                ) ?>
+                            </strong>
+
+                            <span class="sale-badge">
+                                -<?= $product->discountPercentage() ?>%
+                            </span>
+
+                        </div>
+
+                    <?php else: ?>
+                        <div class="product-price">
+                            <strong>
+                                Q <?= number_format(
+                                    (float) $product->price,
+                                    2
+                                ) ?>
+                            </strong>
+                        </div>
+                    <?php endif; ?>
                 </p>
 
                 <?php if ((int) $product->available_stock > 0): ?>

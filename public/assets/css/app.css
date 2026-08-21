@@ -5,3 +5,55 @@
 @import url("navbar.css");
 @import url("cards.css");
 @import url("buttons.css");
+
+/* =====================================================
+   PRECIOS Y PROMOCIONES
+===================================================== */
+
+.product-price {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.product-price del,
+.product-detail-price del {
+    color: #888;
+    font-size: 15px;
+}
+
+.product-price strong {
+    font-size: 18px;
+}
+
+.sale-price {
+    font-weight: 700;
+}
+
+.sale-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-top: 6px;
+    border-radius: 20px;
+    background: #222;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.product-detail-price {
+    margin: 20px 0;
+}
+
+.product-detail-price h2 {
+    margin: 5px 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.product-detail-price del {
+    display: block;
+    margin-bottom: 3px;
+}
