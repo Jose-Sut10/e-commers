@@ -9,11 +9,21 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 
-class OrderService{
+class OrderService
+{
+    /*
+     * =====================================================
+     * CREAR PEDIDO
+     * =====================================================
+     */
+
     public function create(
         array $customer,
-        array $cartItems
+        array $cartItems,
+        ?string $couponCode = null,
+        ?int $shippingMethodId = null
     ): Order {
+
         if (empty($cartItems)) {
             throw new RuntimeException(
                 'El carrito está vacío.'
@@ -24,25 +34,41 @@ class OrderService{
 
         try {
 
-                $customerModel =
-            (
-                new CustomerService()
-            )->findOrCreate(
-                $customer
-            );
+            /*
+             * =================================================
+             * CLIENTE
+             * =================================================
+             */
+
+            $customerModel =
+                (
+                    new CustomerService()
+                )->findOrCreate(
+                    $customer
+                );
+
+            /*
+             * =================================================
+             * VALIDAR PRODUCTOS Y CALCULAR SUBTOTAL
+             * =================================================
+             */
 
             $items = [];
             $subtotal = 0.0;
 
             foreach ($cartItems as $cartItem) {
-
-                $cartProduct =$cartItem['product'];
+                $cartProduct = $cartItem['product'];
 
                 $cartVariant =
                     $cartItem['variant']
                     ?? null;
 
-                $quantity =(int) $cartItem['quantity'];
+                $quantity = (int) $cartItem['quantity'];
+
+                /*
+                 * Bloqueamos el producto durante
+                 * la creación del pedido.
+                 */
 
                 $product =
                     Product::findPublicForUpdate(
@@ -62,6 +88,12 @@ class OrderService{
                 }
 
                 $variant = null;
+
+                /*
+                 * =================================================
+                 * PRODUCTO CON VARIANTE
+                 * =================================================
+                 */
 
                 if ($cartVariant) {
 
@@ -86,16 +118,30 @@ class OrderService{
                         );
                     }
 
+                    /*
+                     * Este método ya toma en cuenta
+                     * promociones de la variante.
+                     */
 
                     $unitPrice =
                         $variant->finalPrice(
                             $product
                         );
 
-                    $sku =(string) $variant->sku;
-                    $variantName =(string) $variant->name;
+                    $sku = (string) $variant->sku;
+                    $variantName = (string) $variant->name;
+
+                /*
+                 * =================================================
+                 * PRODUCTO SIN VARIANTE
+                 * =================================================
+                 */
 
                 } else {
+                    /*
+                     * Si el producto utiliza variantes,
+                     * obligamos a seleccionar una.
+                     */
 
                     if (
                         ProductVariant::existsForProduct(
@@ -116,40 +162,195 @@ class OrderService{
                         );
                     }
 
+                    /*
+                     * Este método ya toma en cuenta
+                     * promociones del producto.
+                     */
+
                     $unitPrice = $product->finalPrice();
-                    $sku =(string) $product->sku;
-                    $variantName =null;
+                    $sku = (string) $product->sku;
+                    $variantName = null;
                 }
 
+                /*
+                 * =================================================
+                 * SUBTOTAL DEL ARTÍCULO
+                 * =================================================
+                 */
 
-                $itemSubtotal = $unitPrice * $quantity;
+                $itemSubtotal =
+                    round(
+                        $unitPrice
+                        * $quantity,
+                        2
+                    );
+
                 $subtotal += $itemSubtotal;
 
                 $items[] = [
+
                     'product' => $product,
                     'variant' => $variant,
                     'variant_name' => $variantName,
                     'sku' => $sku,
                     'quantity' => $quantity,
-                    'unit_price' =>  $unitPrice,
+                    'unit_price' => $unitPrice,
                     'subtotal' => $itemSubtotal,
                 ];
             }
 
+            /** Redondeamos el subtotal final.*/
+
+            $subtotal =
+                round(
+                    $subtotal,
+                    2
+                );
+
+            /*
+             * =================================================
+             * CUPÓN
+             * =================================================
+             *
+             * Aquí estaba la parte que faltaba
+             * en tu archivo.
+             */
+
+            $couponResult =
+                (
+                    new CouponService()
+                )->consume(
+                    $couponCode,
+                    $subtotal
+                );
+
+            $coupon = $couponResult['coupon'];
+            $discount = (float)$couponResult['discount'];
+
+            /*
+             * =================================================
+             * MÉTODO DE ENVÍO
+             * =================================================
+             */
+
+            if (!$shippingMethodId) {
+                throw new RuntimeException(
+                    'Debes seleccionar un método de envío.'
+                );
+            }
+
+            $shippingResult =
+                (
+                    new ShippingService()
+                )->resolve(
+                    $shippingMethodId
+                );
+
+            $shipping = $shippingResult['method'];
+            $shippingTotal = (float) $shippingResult['price'];
+
+            /*
+             * =================================================
+             * TOTAL DEL PEDIDO
+             * =================================================
+             *
+             * subtotal
+             * - descuento
+             * + envío
+             */
+
+            $total =
+                round(
+                    $subtotal
+                    - $discount
+                    + $shippingTotal,
+                    2
+                );
+
+            /*
+             * =================================================
+             * NÚMERO DEL PEDIDO
+             * =================================================
+             */
             $number = $this->generateNumber();
 
-            $order = new Order([
-                'customer_id' => (int) $customerModel->id,
-                'number' => $number,
-                'customer_name' => $customer['name'],
-                'customer_phone' => $customer['phone'],
-                'customer_email' => $customer['email'],
-                'customer_address' => $customer['address'],
-                'notes' => $customer['notes'],
-                'subtotal' => $subtotal,
-                'total' => $subtotal,
-                'status' =>'pending',
-            ]);
+            /*
+             * =================================================
+             * CREAR PEDIDO
+             * =================================================
+             */
+
+            $order =
+                new Order([
+
+                    /*
+                     * Cliente
+                     */
+
+                    'customer_id' => (int) $customerModel->id,
+
+                    /*
+                     * Cupón
+                     */
+
+                    'coupon_id' =>
+                        $coupon
+                            ? (int) $coupon->id
+                            : null,
+
+                    /*
+                     * Envío
+                     */
+
+                    'shipping_method_id' => (int) $shipping->id,
+
+                    /*
+                     * Pedido
+                     */
+
+                    'number' => $number,
+
+                    /*
+                     * Datos del cliente
+                     */
+
+                    'customer_name' => $customer['name'],
+                    'customer_phone' => $customer['phone'],
+                    'customer_email' => $customer['email'],
+                    'customer_address' => $customer['address'],
+                    'notes' => $customer['notes'],
+
+                    /*
+                     * Guardamos también el código
+                     * como dato histórico.
+                     */
+
+                    'coupon_code' =>
+                        $coupon
+                            ? (string) $coupon->code
+                            : null,
+
+                    /*
+                     * Guardamos el nombre del envío
+                     * como dato histórico.
+                     */
+
+                    'shipping_method_name' => (string) $shipping->name,
+
+                    /*
+                     * Totales
+                     */
+
+                    'subtotal' => $subtotal,
+                    'discount_total' =>  $discount,
+                    'shipping_total' => $shippingTotal,
+                    'total' => $total,
+
+                    /*
+                     * Estado inicial
+                     */
+                    'status' => 'pending',
+                ]);
 
             if (!$order->save()) {
                 throw new RuntimeException(
@@ -157,15 +358,27 @@ class OrderService{
                 );
             }
 
-            $inventory =
-                new InventoryService();
+            /*
+             * =================================================
+             * INVENTARIO
+             * =================================================
+             */
+
+            $inventory = new InventoryService();
 
             foreach ($items as $item) {
                 $product = $item['product'];
                 $variant = $item['variant'];
 
+                /*
+                 * =================================================
+                 * GUARDAR DETALLE DEL PEDIDO
+                 * =================================================
+                 */
+
                 $orderItem =
                     new OrderItem([
+
                         'order_id' => (int) $order->id,
                         'product_id' => (int) $product->id,
                         'variant_id' =>
@@ -187,34 +400,65 @@ class OrderService{
                     );
                 }
 
+                /*
+                 * =================================================
+                 * DESCONTAR INVENTARIO
+                 * =================================================
+                 */
+
                 if ($variant) {
                     $inventory->removeVariant(
                         $variant,
-                        $item['quantity'],
+                        (int) $item['quantity'],
                         null,
                         "Pedido {$number}"
                     );
 
                 } else {
-
                     $inventory->remove(
                         $product,
-                        $item['quantity'],
+                        (int) $item['quantity'],
                         null,
                         "Pedido {$number}"
                     );
                 }
             }
+
+            /*
+             * Todo salió correctamente.
+             */
+
             Database::commit();
             return $order;
+
         } catch (Throwable $exception) {
 
-            if (Database::inTransaction()) {
+            /*
+             * Si falla:
+             *
+             * - pedido
+             * - cupón
+             * - inventario
+             * - cliente
+             * - envío
+             *
+             * revertimos todo.
+             */
+
+            if (
+                Database::inTransaction()
+            ) {
                 Database::rollBack();
             }
             throw $exception;
         }
     }
+
+    /*
+     * =====================================================
+     * CAMBIAR ESTADO DEL PEDIDO
+     * =====================================================
+     */
 
     public function changeStatus(
         int $orderId,
@@ -235,15 +479,30 @@ class OrderService{
                 );
             }
 
-            if (!in_array(
-                $newStatus,
-                $order->allowedTransitions(),
-                true
-            )) {
+            /*
+             * Validar transición.
+             */
+
+            if (
+                !in_array(
+                    $newStatus,
+                    $order->allowedTransitions(),
+                    true
+                )
+            ) {
                 throw new RuntimeException(
                     'El cambio de estado solicitado no está permitido.'
                 );
             }
+
+            /*
+             * =================================================
+             * CANCELACIÓN
+             * =================================================
+             *
+             * Si cancelamos un pedido,
+             * devolvemos las existencias.
+             */
 
             if ($newStatus === 'cancelled') {
 
@@ -256,8 +515,11 @@ class OrderService{
 
                 foreach ($items as $item) {
 
-                    if ($item->variant_id) {
+                    /*
+                     * Variante
+                     */
 
+                    if ($item->variant_id) {
                         $variant =
                             ProductVariant::find(
                                 (int) $item->variant_id
@@ -276,13 +538,16 @@ class OrderService{
                             "Cancelación del pedido {$order->number}"
                         );
 
+                    /*
+                     * Producto base
+                     */
+
                     } else {
 
                         $product =
                             Product::find(
                                 (int) $item->product_id
                             );
-
 
                         if (!$product) {
                             throw new RuntimeException(
@@ -299,6 +564,10 @@ class OrderService{
                     }
                 }
             }
+
+            /*
+             * Actualizar estado.
+             */
             $order->status = $newStatus;
 
             if (!$order->save()) {
@@ -306,17 +575,27 @@ class OrderService{
                     'No fue posible actualizar el estado del pedido.'
                 );
             }
+
             Database::commit();
             return $order;
 
         } catch (Throwable $exception) {
 
-            if (Database::inTransaction()) {
+            if (
+                Database::inTransaction()
+            ) {
                 Database::rollBack();
             }
+
             throw $exception;
         }
     }
+
+    /*
+     * =====================================================
+     * GENERAR NÚMERO DE PEDIDO
+     * =====================================================
+     */
 
     private function generateNumber(): string{
         return sprintf(

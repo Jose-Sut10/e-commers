@@ -183,9 +183,7 @@
 
 
     <div>
-        <label for="name">
-            Nombre completo
-        </label>
+        <label for="name">Nombre completo</label>
 
         <input
             id="name"
@@ -211,7 +209,6 @@
 
     <div>
         <label for="phone">Teléfono</label>
-
         <input
             id="phone"
             type="tel"
@@ -239,9 +236,7 @@
     </div>
 
     <div>
-        <label for="email">
-            Correo electrónico
-        </label>
+        <label for="email">Correo electrónico</label>
 
         <input
             id="email"
@@ -290,9 +285,7 @@
     </div>
 
     <div>
-        <label for="notes">
-            Notas del pedido
-        </label>
+        <label for="notes">Notas del pedido</label>
 
         <textarea
             id="notes"
@@ -305,8 +298,152 @@
         ) ?></textarea>
     </div>
 
-    <button type="submit">Confirmar pedido</button>
+<div>
+    <label for="shipping_method_id">Método de envío</label>
 
+    <?php if (empty($shippingMethods)): ?>
+        <div class="alert alert-warning">
+            En este momento no hay métodos
+            de envío disponibles.
+        </div>
+    <?php else: ?>
+
+        <select
+            id="shipping_method_id"
+            name="shipping_method_id"
+            required
+        >
+            <option value="">Seleccionar método de envío</option>
+
+            <?php foreach (
+                $shippingMethods
+                as $method
+            ): ?>
+
+                <option
+                    value="<?= (int) $method->id ?>"
+
+                    data-price="<?= htmlspecialchars(
+                        number_format(
+                            (float) $method->price,
+                            2,
+                            '.',
+                            ''
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"
+
+                    <?= (string)
+                        old('shipping_method_id')
+                        ===
+                        (string) $method->id
+                            ? 'selected'
+                            : ''
+                    ?>
+                >
+
+                    <?= htmlspecialchars(
+                        (string) $method->name,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>
+
+                    —
+
+                    <?php if (
+                        (float) $method->price > 0
+                    ): ?>
+
+                        Q <?= number_format(
+                            (float) $method->price,
+                            2
+                        ) ?>
+
+                    <?php else: ?>
+                        Gratis
+                    <?php endif; ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+
+        <?php if (
+            error('shipping_method_id')
+        ): ?>
+            <small class="form-error">
+                <?= htmlspecialchars(
+                    (string) error(
+                        'shipping_method_id'
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </small>
+        <?php endif; ?>
+    <?php endif; ?>
+
+</div>
+<div
+    class="checkout-total-box"
+    data-base-total="<?= htmlspecialchars(
+        number_format(
+            (float) $couponResult['total'],
+            2,
+            '.',
+            ''
+        ),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>"
+>
+    <p>
+        Subtotal:
+        <strong>
+            Q <?= number_format(
+                (float)
+                $couponResult['subtotal'],
+                2
+            ) ?>
+        </strong>
+    </p>
+
+    <?php if (
+        (float)
+        $couponResult['discount'] > 0
+    ): ?>
+        <p>
+            Descuento:
+            <strong>
+                - Q <?= number_format(
+                    (float)
+                    $couponResult['discount'],
+                    2
+                ) ?>
+            </strong>
+        </p>
+    <?php endif; ?>
+
+    <p>
+        Envío:
+        <strong id="checkout-shipping">
+            Q 0.00
+        </strong>
+    </p>
+
+    <h2>
+        Total:
+        <span id="checkout-total">
+            Q <?= number_format(
+                (float)
+                $couponResult['total'],
+                2
+            ) ?>
+        </span>
+    </h2>
+
+</div>
+    <button type="submit">Confirmar pedido</button>
     <a href="<?= htmlspecialchars(
         url('carrito'),
         ENT_QUOTES,
@@ -315,3 +452,75 @@
         Volver al carrito
     </a>
 </form>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        const select =
+            document.getElementById(
+                'shipping_method_id'
+            );
+
+        const box =
+            document.querySelector(
+                '.checkout-total-box'
+            );
+
+        const shippingElement =
+            document.getElementById(
+                'checkout-shipping'
+            );
+
+        const totalElement =
+            document.getElementById(
+                'checkout-total'
+            );
+
+
+        if (
+            !select
+            || !box
+            || !shippingElement
+            || !totalElement
+        ) {
+            return;
+        }
+
+        const baseTotal =
+            parseFloat(
+                box.dataset.baseTotal
+                || '0'
+            );
+
+        function updateTotal() {
+
+            const option =
+                select.options[
+                    select.selectedIndex
+                ];
+
+
+            const shipping =
+                option
+                    ? parseFloat(
+                        option.dataset.price
+                        || '0'
+                    )
+                    : 0;
+
+
+            const total = baseTotal + shipping;
+
+
+            shippingElement.textContent = 'Q ' + shipping.toFixed(2);
+            totalElement.textContent = 'Q '
+                + total.toFixed(2);
+        }
+
+        select.addEventListener('change',updateTotal);
+        updateTotal();
+    }
+);
+</script>
