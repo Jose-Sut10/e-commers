@@ -57,3 +57,131 @@
     display: block;
     margin-bottom: 3px;
 }
+
+/* =====================================================
+   LAYOUT PÚBLICO DE LA TIENDA
+===================================================== */
+
+.shop-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.shop-header-container {
+    width: min(1200px, calc(100% - 40px));
+    margin: 0 auto;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.shop-brand {
+    color: #111;
+    text-decoration: none;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.shop-navigation {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.shop-navigation a {
+    color: #333;
+    text-decoration: none;
+}
+
+.shop-navigation a:hover {
+    color: #000;
+}
+
+.shop-cart-link {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.cart-count {
+    min-width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border-radius: 50px;
+    background: #222;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.shop-main {
+    min-height: calc(100vh - 150px);
+    padding: 35px 0 60px;
+}
+
+.shop-container {
+    width: min(1200px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
+.shop-footer {
+    padding: 25px 0;
+    border-top: 1px solid #e8e8e8;
+    color: #777;
+    font-size: 14px;
+    background: #fff;
+}
+
+
+/* =====================================================
+   CHECKOUT
+===================================================== */
+
+.checkout-total-box {
+    margin: 25px 0;
+    padding: 20px;
+    background: #f8f8f8;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+}
+
+.checkout-total-box p {
+    margin: 7px 0;
+}
+
+.checkout-total-box h2 {
+    margin-top: 15px;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 700px) {
+    .shop-header-container {
+        min-height: auto;
+        padding-top: 18px;
+        padding-bottom: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .shop-navigation {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .shop-container,
+    .shop-header-container {
+        width: min(
+            100% - 24px,
+            1200px
+        );
+    }
+}

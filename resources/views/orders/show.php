@@ -269,10 +269,7 @@ $warning = session('warning');
 </p>
 
 
-<?php
-$transitions =
-    $order->allowedTransitions();
-?>
+<?php $transitions = $order->allowedTransitions();?>
 
 <?php if (!empty($transitions)): ?>
 
@@ -292,20 +289,14 @@ $transitions =
             value="<?= (int) $order->id ?>"
         >
 
-        <label for="status">
-            Nuevo estado
-        </label>
+        <label for="status">Nuevo estado</label>
 
         <select
             id="status"
             name="status"
             required
         >
-
-            <option value="">
-                Seleccionar
-            </option>
-
+            <option value="">Seleccionar</option>
             <?php foreach ($transitions as $status): ?>
 
                 <option
@@ -317,26 +308,15 @@ $transitions =
                 >
                     <?php
                     echo match ($status) {
-                        'confirmed' =>
-                            'Confirmado',
-
-                        'shipped' =>
-                            'Enviado',
-
-                        'delivered' =>
-                            'Entregado',
-
-                        'cancelled' =>
-                            'Cancelado',
-
-                        default =>
-                            $status,
+                        'confirmed' => 'Confirmado',
+                        'shipped' => 'Enviado',
+                        'delivered' => 'Entregado',
+                        'cancelled' => 'Cancelado',
+                        default => $status,
                     };
                     ?>
                 </option>
-
             <?php endforeach; ?>
-
         </select>
 
         <button
