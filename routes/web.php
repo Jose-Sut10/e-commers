@@ -15,6 +15,7 @@ use App\Controllers\CustomerController;
 use App\Controllers\PromotionController;
 use App\Controllers\CouponController;
 use App\Controllers\ShippingMethodController;
+use App\Controllers\PaymentMethodController;
 
 $router->get('/', [
     HomeController::class,
@@ -363,5 +364,21 @@ $router->post('/envios', [
 
 $router->post('/envios/actualizar', [
     ShippingMethodController::class,
+    'update'
+]);
+
+//administra metodos de pago
+$router->get('/metodos-pago', [
+    PaymentMethodController::class,
+    'index'
+]);
+
+$router->post('/metodos-pago', [
+    PaymentMethodController::class,
+    'store'
+]);
+
+$router->post('/metodos-pago/actualizar', [
+    PaymentMethodController::class,
     'update'
 ]);
