@@ -89,8 +89,7 @@ $warning = session('warning');
 
 <?php if ($order->notes): ?>
 
-    <p>
-        <strong>Notas:</strong>
+    <p><strong>Notas:</strong>
 
         <?= nl2br(
             htmlspecialchars(
@@ -120,11 +119,8 @@ $warning = session('warning');
     </thead>
 
     <tbody>
-
         <?php foreach ($items as $item): ?>
-
             <tr>
-
                 <td>
                     <?= htmlspecialchars(
                         (string) $item->product_name,
@@ -218,6 +214,33 @@ $warning = session('warning');
 
     </p>
 
+<?php endif; ?>
+
+<?php if (
+    $order->shipping_method_name
+): ?>
+
+    <p>
+        <strong>Método de envío:</strong>
+
+        <?= htmlspecialchars(
+            (string)
+            $order->shipping_method_name,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+
+    </p>
+
+    <p>
+        <strong>Envío:</strong>
+
+        Q <?= number_format(
+            (float)
+            $order->shipping_total,
+            2
+        ) ?>
+    </p>
 <?php endif; ?>
 
 <h2>
