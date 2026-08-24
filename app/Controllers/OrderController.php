@@ -192,4 +192,73 @@ class OrderController extends Controller{
             );
         }
     }
+
+    public function updatePaymentStatus(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $orderId =
+            filter_var(
+                $input['order_id']
+                ?? null,
+                FILTER_VALIDATE_INT,
+                [
+                    'options' => [
+                        'min_range' => 1,
+                    ],
+                ]
+            );
+
+        $status =
+            trim(
+                (string) (
+                    $input['payment_status']
+                    ?? ''
+                )
+            );
+
+        if (!$orderId) {
+            Session::flash(
+                'warning',
+                'El pedido indicado no es válido.'
+            );
+            redirect('pedidos');
+        }
+
+        try {
+
+            (
+                new OrderService()
+            )->changePaymentStatus(
+                (int) $orderId,
+                $status
+            );
+
+            Session::flash(
+                'success',
+                $status === 'paid'
+                    ? 'El pago fue registrado correctamente.'
+                    : 'El pago volvió a estado pendiente.'
+            );
+
+        } catch (RuntimeException $exception) {
+
+            Session::flash( 'warning', $exception->getMessage());
+
+        } catch (Throwable $exception) {
+            error_log(
+                $exception->getMessage()
+            );
+
+            Session::flash(
+                'warning',
+                'No fue posible actualizar el pago.'
+            );
+        }
+
+        redirect(
+            'pedidos/ver?id='
+            . (int) $orderId
+        );
+    }
 }

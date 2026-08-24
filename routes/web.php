@@ -382,3 +382,8 @@ $router->post('/metodos-pago/actualizar', [
     PaymentMethodController::class,
     'update'
 ]);
+
+$router->post('/pedidos/pago', [
+    OrderController::class,
+    'updatePaymentStatus'
+]);

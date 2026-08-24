@@ -242,6 +242,87 @@ $warning = session('warning');
         ) ?>
     </p>
 <?php endif; ?>
+<hr>
+<h3>Pago</h3>
+
+<p>
+    <strong> Método:</strong>
+    <?= htmlspecialchars(
+        (string) (
+            $order->payment_method_name
+            ?: 'No especificado'
+        ),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>
+</p>
+
+<p>
+    <strong>Estado del pago:</strong>
+    <?php if (
+        $order->payment_status
+        === 'paid'
+    ): ?>
+        Pagado
+    <?php else: ?>
+        Pendiente de pago
+    <?php endif; ?>
+</p>
+
+<?php if ($order->paid_at): ?>
+    <p>
+        <strong>Fecha de pago:</strong>
+
+        <?= htmlspecialchars(
+            (string) $order->paid_at,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </p>
+<?php endif; ?>
+
+<form
+    method="POST"
+    action="<?= htmlspecialchars(
+        url('pedidos/pago'),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>"
+>
+
+    <?= csrf_field() ?>
+
+    <input
+        type="hidden"
+        name="order_id"
+        value="<?= (int) $order->id ?>"
+    >
+
+    <?php if (
+        $order->payment_status
+        === 'paid'
+    ): ?>
+
+        <input
+            type="hidden"
+            name="payment_status"
+            value="pending"
+        >
+
+        <button type="submit">Marcar pago como pendiente</button>
+
+    <?php else: ?>
+
+        <input
+            type="hidden"
+            name="payment_status"
+            value="paid"
+        >
+
+        <button type="submit">Marcar como pagado</button>
+
+    <?php endif; ?>
+</form>
 
 <h2>
     Total:

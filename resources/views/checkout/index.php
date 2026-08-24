@@ -601,3 +601,51 @@ document.addEventListener(
     }
 );
 </script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+        const paymentSelect =
+            document.getElementById(
+                'payment_method_id'
+            );
+
+        const instructionsBox =
+            document.getElementById(
+                'payment-method-instructions'
+            );
+
+        if (!paymentSelect || !instructionsBox) {
+            return;
+        }
+
+        function updatePaymentInstructions() {
+            const option =
+                paymentSelect.options[
+                    paymentSelect.selectedIndex
+                ];
+
+            if (!option) {
+                return;
+            }
+
+            const instructions = option.dataset.instructions || '';
+
+            if (
+                instructions.trim() === ''
+            ) {
+                instructionsBox.style.display = 'none';
+                instructionsBox.textContent = '';
+                return;
+            }
+
+            instructionsBox.textContent = instructions;
+            instructionsBox.style.display = 'block';
+        }
+
+        paymentSelect.addEventListener('change', updatePaymentInstructions);
+        updatePaymentInstructions();
+    }
+);
+</script>

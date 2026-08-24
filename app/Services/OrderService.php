@@ -602,11 +602,83 @@ class OrderService
         }
     }
 
-    /*
-     * =====================================================
-     * GENERAR NÚMERO DE PEDIDO
-     * =====================================================
-     */
+    /*CAMBIAR ESTADO DEL PAGO*/
+
+    public function changePaymentStatus(
+        int $orderId,
+        string $newStatus
+    ): Order {
+        $allowedStatuses = ['pending','paid',];
+
+        if (
+            !in_array(
+                $newStatus,
+                $allowedStatuses,
+                true
+            )
+        ) {
+            throw new RuntimeException(
+                'El estado del pago no es válido.'
+            );
+        }
+
+        Database::beginTransaction();
+
+        try {
+
+            $order =
+                Order::findForUpdate(
+                    $orderId
+                );
+
+            if (!$order) {
+                throw new RuntimeException(
+                    'El pedido no fue encontrado.'
+                );
+            }
+
+            /*
+            * No permitimos registrar como
+            * pagado un pedido cancelado.
+            */
+
+            if (
+                $order->status === 'cancelled'
+                && $newStatus === 'paid'
+            ) {
+                throw new RuntimeException(
+                    'No puedes registrar como pagado un pedido cancelado.'
+                );
+            }
+
+            $order->payment_status = $newStatus;
+            $order->paid_at =
+                $newStatus === 'paid'
+                    ? date('Y-m-d H:i:s')
+                    : null;
+
+            if (!$order->save()) {
+                throw new RuntimeException(
+                    'No fue posible actualizar el estado del pago.'
+                );
+            }
+
+            Database::commit();
+            return $order;
+
+        } catch (Throwable $exception) {
+
+            if (
+                Database::inTransaction()
+            ) {
+                Database::rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
+    /*GENERAR NÚMERO DE PEDIDO*/
 
     private function generateNumber(): string{
         return sprintf(
