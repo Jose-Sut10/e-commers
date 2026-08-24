@@ -21,7 +21,8 @@ class OrderService
         array $customer,
         array $cartItems,
         ?string $couponCode = null,
-        ?int $shippingMethodId = null
+        ?int $shippingMethodId = null,
+        ?int $paymentMethodId = null
     ): Order {
 
         if (empty($cartItems)) {
@@ -249,11 +250,25 @@ class OrderService
             $shipping = $shippingResult['method'];
             $shippingTotal = (float) $shippingResult['price'];
 
-            /*
-             * =================================================
-             * TOTAL DEL PEDIDO
-             * =================================================
-             *
+            /*MÉTODO DE PAGO*/
+
+            if (!$paymentMethodId) {
+                throw new RuntimeException(
+                    'Debes seleccionar un método de pago.'
+                );
+            }
+
+            $paymentResult =
+                (
+                    new PaymentService()
+                )->resolve(
+                    $paymentMethodId
+                );
+
+            $paymentMethod =
+                $paymentResult['method'];
+
+            /*TOTAL DEL PEDIDO
              * subtotal
              * - descuento
              * + envío
@@ -267,18 +282,10 @@ class OrderService
                     2
                 );
 
-            /*
-             * =================================================
-             * NÚMERO DEL PEDIDO
-             * =================================================
-             */
+            /*NÚMERO DEL PEDIDO*/
             $number = $this->generateNumber();
 
-            /*
-             * =================================================
-             * CREAR PEDIDO
-             * =================================================
-             */
+            /*CREAR PEDIDO*/
 
             $order =
                 new Order([
@@ -303,6 +310,7 @@ class OrderService
                      */
 
                     'shipping_method_id' => (int) $shipping->id,
+                    'payment_method_id' => (int) $paymentMethod->id,
 
                     /*
                      * Pedido
@@ -336,7 +344,8 @@ class OrderService
                      */
 
                     'shipping_method_name' => (string) $shipping->name,
-
+                    'payment_method_name' => (string) $paymentMethod->name,
+                    'payment_method_code' => (string) $paymentMethod->code,
                     /*
                      * Totales
                      */
@@ -344,6 +353,8 @@ class OrderService
                     'subtotal' => $subtotal,
                     'discount_total' =>  $discount,
                     'shipping_total' => $shippingTotal,
+                    'payment_status' => 'pending',
+                    'paid_at' => null,
                     'total' => $total,
 
                     /*

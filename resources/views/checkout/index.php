@@ -367,6 +367,83 @@
             <?php endforeach; ?>
         </select>
 
+        <!-- MÉTODO DE PAGO -->
+        <div>
+            <label for="payment_method_id">Método de pago</label>
+
+            <?php if (empty($paymentMethods)): ?>
+                <div class="alert alert-warning">
+                    En este momento no hay métodos
+                    de pago disponibles.
+                </div>
+
+            <?php else: ?>
+
+                <select
+                    id="payment_method_id"
+                    name="payment_method_id"
+                    required
+                >
+                    <option value="">Seleccionar método de pago</option>
+
+                    <?php foreach (
+                        $paymentMethods
+                        as $method
+                    ): ?>
+                        <option
+                            value="<?= (int) $method->id ?>"
+                            data-instructions="<?= htmlspecialchars(
+                                (string) (
+                                    $method->instructions
+                                    ?? ''
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            <?= (string)
+                                old('payment_method_id')
+                                ===
+                                (string) $method->id
+                                    ? 'selected'
+                                    : ''
+                            ?>
+                        >
+                            <?= htmlspecialchars(
+                                (string) $method->name,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <?php if (
+                    error('payment_method_id')
+                ): ?>
+                    <small class="form-error">
+                        <?= htmlspecialchars(
+                            (string) error(
+                                'payment_method_id'
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </small>
+                <?php endif; ?>
+
+                <div
+                    id="payment-method-instructions"
+                    style="
+                        display:none;
+                        margin-top:12px;
+                        padding:14px;
+                        background:#f8f8f8;
+                        border:1px solid #e5e5e5;
+                        border-radius:8px;
+                    "
+                ></div>
+            <?php endif; ?>
+        </div>
 
         <?php if (
             error('shipping_method_id')
