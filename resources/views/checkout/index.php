@@ -173,6 +173,7 @@
 
 <form
     method="POST"
+    enctype="multipart/form-data"
     action="<?= htmlspecialchars(
         url('checkout'),
         ENT_QUOTES,
@@ -392,6 +393,11 @@
                     ): ?>
                         <option
                             value="<?= (int) $method->id ?>"
+                            data-type="<?= htmlspecialchars(
+                                (string) $method->type,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
                             data-instructions="<?= htmlspecialchars(
                                 (string) (
                                     $method->instructions
@@ -416,6 +422,42 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
+
+                <!-- COMPROBANTE DE TRANSFERENCIA -->
+
+                <div
+                    id="payment-proof-section"
+                    style="display:none;"
+                >
+                    <label for="payment_proof">Comprobante de transferencia</label>
+
+                    <input
+                        id="payment_proof"
+                        type="file"
+                        name="payment_proof"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    >
+
+                    <small>
+                        Adjunta una imagen JPG, PNG o WEBP.
+                        Tamaño máximo: 2 MB.
+                    </small>
+
+                    <?php if (
+                        error('payment_proof')
+                    ): ?>
+                        <small class="form-error">
+
+                            <?= htmlspecialchars(
+                                (string) error(
+                                    'payment_proof'
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </small>
+                    <?php endif; ?>
+                </div>
 
                 <?php if (
                     error('payment_method_id')
@@ -611,16 +653,16 @@ document.addEventListener(
                 'payment_method_id'
             );
 
-        const instructionsBox =
-            document.getElementById(
-                'payment-method-instructions'
-            );
+        const instructionsBox = document.getElementById('payment-method-instructions');
+        const proofSection = document.getElementById('payment-proof-section');
+        const proofInput = document.getElementById('payment_proof');
 
-        if (!paymentSelect || !instructionsBox) {
+        if (!paymentSelect) {
             return;
         }
 
-        function updatePaymentInstructions() {
+        function updatePaymentMethod() {
+
             const option =
                 paymentSelect.options[
                     paymentSelect.selectedIndex
@@ -630,22 +672,52 @@ document.addEventListener(
                 return;
             }
 
+            /*INSTRUCCIONES*/
+
             const instructions = option.dataset.instructions || '';
 
-            if (
-                instructions.trim() === ''
-            ) {
-                instructionsBox.style.display = 'none';
-                instructionsBox.textContent = '';
-                return;
+            if (instructionsBox) {
+                if (
+                    instructions.trim()
+                    !== ''
+                ) {
+                    instructionsBox.textContent = instructions;
+                    instructionsBox.style.display = 'block';
+
+                } else {
+                    instructionsBox.textContent = '';
+                    instructionsBox.style.display = 'none';
+                }
             }
 
-            instructionsBox.textContent = instructions;
-            instructionsBox.style.display = 'block';
+            /*COMPROBANTE*/
+
+            const paymentType = option.dataset.type || '';
+            const requiresProof =
+                paymentType
+                === 'bank_transfer';
+
+            if (proofSection && proofInput) {
+
+                if (requiresProof) {
+                    proofSection.style.display = 'block';
+                    proofInput.required = true;
+                } else {
+                    proofSection.style.display = 'none';
+                    proofInput.required = false;
+
+                    /*
+                     * Limpiamos el archivo
+                     * si cambia a efectivo.
+                     */
+
+                    proofInput.value = '';
+                }
+            }
         }
 
-        paymentSelect.addEventListener('change', updatePaymentInstructions);
-        updatePaymentInstructions();
+        paymentSelect.addEventListener('change',updatePaymentMethod);
+        updatePaymentMethod();
     }
 );
 </script>

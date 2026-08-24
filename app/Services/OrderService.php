@@ -9,20 +9,16 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 
-class OrderService
-{
-    /*
-     * =====================================================
-     * CREAR PEDIDO
-     * =====================================================
-     */
+class OrderService{
+    /*CREAR PEDIDO*/
 
     public function create(
         array $customer,
         array $cartItems,
         ?string $couponCode = null,
         ?int $shippingMethodId = null,
-        ?int $paymentMethodId = null
+        ?int $paymentMethodId = null,
+        ?array $paymentProofFile = null
     ): Order {
 
         if (empty($cartItems)) {
@@ -32,14 +28,11 @@ class OrderService
         }
 
         Database::beginTransaction();
+        $paymentProofPath = null;
 
         try {
 
-            /*
-             * =================================================
-             * CLIENTE
-             * =================================================
-             */
+            /* CLIENTE*/
 
             $customerModel =
                 (
@@ -48,11 +41,7 @@ class OrderService
                     $customer
                 );
 
-            /*
-             * =================================================
-             * VALIDAR PRODUCTOS Y CALCULAR SUBTOTAL
-             * =================================================
-             */
+            /*VALIDAR PRODUCTOS Y CALCULAR SUBTOTAL*/
 
             $items = [];
             $subtotal = 0.0;
@@ -268,6 +257,20 @@ class OrderService
             $paymentMethod =
                 $paymentResult['method'];
 
+            /*COMPROBANTE DE TRANSFERENCIA*/
+
+            if (
+                (string) $paymentMethod->type
+                === 'bank_transfer'
+            ) {
+                $paymentProofPath =
+                    (
+                        new PaymentProofUploadService()
+                    )->upload(
+                        $paymentProofFile
+                    );
+            }
+
             /*TOTAL DEL PEDIDO
              * subtotal
              * - descuento
@@ -290,38 +293,23 @@ class OrderService
             $order =
                 new Order([
 
-                    /*
-                     * Cliente
-                     */
-
+                    /*Cliente*/
                     'customer_id' => (int) $customerModel->id,
 
-                    /*
-                     * Cupón
-                     */
-
+                    /*Cupón*/
                     'coupon_id' =>
                         $coupon
                             ? (int) $coupon->id
                             : null,
 
-                    /*
-                     * Envío
-                     */
-
+                    /*Envío*/
                     'shipping_method_id' => (int) $shipping->id,
                     'payment_method_id' => (int) $paymentMethod->id,
 
-                    /*
-                     * Pedido
-                     */
-
+                    /*Pedido*/
                     'number' => $number,
 
-                    /*
-                     * Datos del cliente
-                     */
-
+                    /*Datos del cliente*/
                     'customer_name' => $customer['name'],
                     'customer_phone' => $customer['phone'],
                     'customer_email' => $customer['email'],
@@ -346,9 +334,12 @@ class OrderService
                     'shipping_method_name' => (string) $shipping->name,
                     'payment_method_name' => (string) $paymentMethod->name,
                     'payment_method_code' => (string) $paymentMethod->code,
-                    /*
-                     * Totales
-                     */
+                    'payment_proof_path' => $paymentProofPath,
+                    'payment_proof_uploaded_at' => $paymentProofPath
+                        ? date('Y-m-d H:i:s')
+                        : null,
+
+                    /*Totales*/
 
                     'subtotal' => $subtotal,
                     'discount_total' =>  $discount,
@@ -443,33 +434,28 @@ class OrderService
             return $order;
 
         } catch (Throwable $exception) {
+            if (Database::inTransaction()) {
+                Database::rollBack();
+            }
 
             /*
-             * Si falla:
-             *
-             * - pedido
-             * - cupón
-             * - inventario
-             * - cliente
-             * - envío
-             *
-             * revertimos todo.
-             */
+            * Si la imagen se alcanzó a subir
+            * pero falló la creación del pedido,
+            * eliminamos el archivo.
+            */
 
-            if (
-                Database::inTransaction()
-            ) {
-                Database::rollBack();
+            if ($paymentProofPath) {
+                (
+                    new PaymentProofUploadService()
+                )->delete(
+                    $paymentProofPath
+                );
             }
             throw $exception;
         }
     }
 
-    /*
-     * =====================================================
-     * CAMBIAR ESTADO DEL PEDIDO
-     * =====================================================
-     */
+    /*CAMBIAR ESTADO DEL PEDIDO*/
 
     public function changeStatus(
         int $orderId,
@@ -648,6 +634,23 @@ class OrderService
             ) {
                 throw new RuntimeException(
                     'No puedes registrar como pagado un pedido cancelado.'
+                );
+            }
+
+            /*
+            * Una transferencia no se puede
+            * marcar como pagada si no tenemos
+            * comprobante.
+            */
+
+            if (
+                $newStatus === 'paid'
+                && $order->payment_method_code
+                    === 'bank_transfer'
+                && !$order->payment_proof_path
+            ) {
+                throw new RuntimeException(
+                    'No puedes marcar esta transferencia como pagada porque no tiene comprobante.'
                 );
             }
 

@@ -251,22 +251,21 @@ class CheckoutController extends Controller{
                 )
             );
 
+
+        $paymentProofFile = $_FILES['payment_proof'] ?? null;
         /*CREAR PEDIDO*/
 
         try {
             $order =
-                (
-                    new OrderService()
-                )->create(
+                (new OrderService())->create(
                     $customer,
                     $items,
-
                     $couponCode === ''
                         ? null
                         : $couponCode,
-
                     (int) $shippingMethodId,
-                    (int) $paymentMethodId
+                    (int) $paymentMethodId,
+                    $paymentProofFile
                 );
 
             /*

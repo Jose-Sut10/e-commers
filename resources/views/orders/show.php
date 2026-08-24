@@ -324,6 +324,77 @@ $warning = session('warning');
     <?php endif; ?>
 </form>
 
+<?php if ($order->payment_method_code === 'bank_transfer'): ?>
+    <div
+        style="
+            margin-top:20px;
+            padding:20px;
+            border:1px solid #e5e7eb;
+            border-radius:10px;
+        "
+    >
+        <h3>Comprobante de transferencia</h3>
+
+        <?php if ($order->payment_proof_path): ?>
+
+            <a
+                href="<?= htmlspecialchars(
+                    asset(
+                        (string)
+                        $order->payment_proof_path
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    src="<?= htmlspecialchars(
+                        asset(
+                            (string)
+                            $order->payment_proof_path
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"
+                    alt="Comprobante de transferencia"
+                    style="
+                        display:block;
+                        width:100%;
+                        max-width:500px;
+                        max-height:500px;
+                        object-fit:contain;
+                        margin-top:15px;
+                        border-radius:8px;
+                        border:1px solid #ddd;
+                    "
+                >
+            </a>
+
+            <?php if ($order->payment_proof_uploaded_at): ?>
+                <p>
+                    <small>
+                        Comprobante recibido:
+
+                        <?= htmlspecialchars(
+                            (string)
+                            $order->payment_proof_uploaded_at,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </small>
+                </p>
+            <?php endif; ?>
+
+        <?php else: ?>
+            <div class="alert alert-warning">
+                Este pedido no tiene comprobante.
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
 <h2>
     Total:
     Q <?= number_format(
