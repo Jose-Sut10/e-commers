@@ -551,3 +551,53 @@ button,
         max-width: none;
     }
 }
+
+/* =====================================================
+   INFORMACIÓN DE DESPACHO
+===================================================== */
+
+.dashboard-section {
+    margin-bottom: 24px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.dashboard-section h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.dashboard-section form > div {
+    margin-bottom: 16px;
+}
+
+.dashboard-section label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.dashboard-section input[type="text"],
+.dashboard-section input[type="file"],
+.dashboard-section select,
+.dashboard-section textarea {
+    width: 100%;
+    max-width: 600px;
+    padding: 10px 12px;
+    border: 1px solid #d4d4d8;
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+}
+
+.dashboard-section input:focus,
+.dashboard-section select:focus,
+.dashboard-section textarea:focus {
+    outline: none;
+    border-color: #18181b;
+    box-shadow:
+        0 0 0 3px rgba(24, 24, 27, 0.08);
+}

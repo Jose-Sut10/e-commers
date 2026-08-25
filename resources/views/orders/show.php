@@ -1,13 +1,40 @@
 <?php
 $success = session('success');
 $warning = session('warning');
+$transitions = $order->allowedTransitions();
+
+$manualTransitions =
+    array_values(
+        array_filter(
+            $transitions,
+            fn (string $status): bool =>
+                $status !== 'shipped'
+        )
+    );
+
+
+/*Etiquetas de estados.*/
+
+$statusLabels = [
+    'pending' => 'Pendiente',
+    'confirmed' => 'Confirmado',
+    'shipped' => 'Enviado',
+    'delivered' => 'Entregado',
+    'cancelled' => 'Cancelado',
+];
+
 ?>
 
-<a href="<?= htmlspecialchars(
-    url('pedidos'),
-    ENT_QUOTES,
-    'UTF-8'
-) ?>">
+<!-- =====================================================
+     VOLVER
+===================================================== -->
+<a
+    href="<?= htmlspecialchars(
+        url('pedidos'),
+        ENT_QUOTES,
+        'UTF-8'
+    ) ?>"
+>
     ← Volver a pedidos
 </a>
 
@@ -20,6 +47,9 @@ $warning = session('warning');
     ) ?>
 </h1>
 
+<!-- =====================================================
+     MENSAJES
+===================================================== -->
 <?php if ($success): ?>
     <div class="alert alert-success">
         <?= htmlspecialchars(
@@ -40,154 +70,179 @@ $warning = session('warning');
     </div>
 <?php endif; ?>
 
-<h2>Información del cliente</h2>
+<!-- =====================================================
+     INFORMACIÓN DEL CLIENTE
+===================================================== -->
 
-<p>
-    <strong>Nombre:</strong>
-
-    <?= htmlspecialchars(
-        (string) $order->customer_name,
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>
-</p>
-
-<p>
-    <strong>Teléfono:</strong>
-
-    <?= htmlspecialchars(
-        (string) $order->customer_phone,
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>
-</p>
-
-<p>
-    <strong>Correo:</strong>
-
-    <?= htmlspecialchars(
-        (string) (
-            $order->customer_email
-            ?: 'No registrado'
-        ),
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>
-</p>
-
-<p>
-    <strong>Dirección:</strong>
-    <?= nl2br(
-        htmlspecialchars(
-            (string) $order->customer_address,
+<section class="dashboard-section">
+    <h2> Información del cliente</h2>
+    <p>
+        <strong>Nombre:</strong>
+        <?= htmlspecialchars(
+            (string) $order->customer_name,
             ENT_QUOTES,
             'UTF-8'
-        )
-    ) ?>
-</p>
+        ) ?>
+    </p>
 
-<?php if ($order->notes): ?>
-    <p><strong>Notas:</strong>
+    <p>
+        <strong> Teléfono: </strong>
+
+        <?= htmlspecialchars(
+            (string) $order->customer_phone,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </p>
+
+    <p>
+        <strong> Correo:</strong>
+
+        <?= htmlspecialchars(
+            (string) (
+                $order->customer_email
+                ?: 'No registrado'
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </p>
+
+    <p>
+        <strong>Dirección:</strong>
 
         <?= nl2br(
             htmlspecialchars(
-                (string) $order->notes,
+                (string) $order->customer_address,
                 ENT_QUOTES,
                 'UTF-8'
             )
         ) ?>
     </p>
-<?php endif; ?>
 
-<hr>
+    <?php if ($order->notes): ?>
+        <p>
+            <strong>Notas:</strong>
 
-<h2>Productos</h2>
-
-<table>
-    <thead>
-        <tr>
-            <th>Producto</th>
-            <th>SKU</th>
-            <th>Precio</th>
-            <th>Cantidad</th>
-            <th>Subtotal</th>
-            <th>Variante</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        <?php foreach ($items as $item): ?>
-            <tr>
-                <td>
-                    <?= htmlspecialchars(
-                        (string) $item->product_name,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>
-                </td>
-
-                <td>
-                    <?= htmlspecialchars(
-                        (string) $item->sku,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>
-                </td>
-
-                <td>
-                    Q <?= number_format(
-                        (float) $item->unit_price,
-                        2
-                    ) ?>
-                </td>
-
-                <td>
-                    <?= (int) $item->quantity ?>
-                </td>
-
-                <td>
-                    Q <?= number_format(
-                        (float) $item->subtotal,
-                        2
-                    ) ?>
-                </td>
-
-            </tr>
-
-            <td>
-                <?= htmlspecialchars(
-                    (string) (
-                        $item->variant_name
-                        ?: 'Producto base'
-                    ),
+            <?= nl2br(
+                htmlspecialchars(
+                    (string) $order->notes,
                     ENT_QUOTES,
                     'UTF-8'
-                ) ?>
-            </td>
+                )
+            ) ?>
+        </p>
+    <?php endif; ?>
 
-        <?php endforeach; ?>
+</section>
 
-    </tbody>
-</table>
+<!-- =====================================================
+     PRODUCTOS
+===================================================== -->
 
-<p>
-    Subtotal:
-    <strong>
+<section class="dashboard-section">
+    <h2>Productos</h2>
+
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Variante</th>
+                    <th>SKU</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            <?php foreach ($items as $item): ?>
+                <tr>
+
+                    <!-- PRODUCTO -->
+                    <td>
+                        <?= htmlspecialchars(
+                            (string) $item->product_name,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+
+                    </td>
+
+                    <!-- VARIANTE -->
+
+                    <td>
+                        <?= htmlspecialchars(
+                            (string) (
+                                $item->variant_name
+                                ?: 'Producto base'
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </td>
+
+                    <!-- SKU -->
+                    <td>
+                        <?= htmlspecialchars(
+                            (string) $item->sku,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </td>
+
+                    <!-- PRECIO -->
+                    <td>
+                        Q <?= number_format(
+                            (float) $item->unit_price,
+                            2
+                        ) ?>
+
+                    </td>
+
+                    <!-- CANTIDAD -->
+                    <td><?= (int) $item->quantity ?></td>
+
+                    <!-- SUBTOTAL -->
+
+                    <td>
+                        Q <?= number_format(
+                            (float) $item->subtotal,
+                            2
+                        ) ?>
+
+                    </td>
+                </tr>
+
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- =====================================================
+     RESUMEN ECONÓMICO
+===================================================== -->
+
+<section class="dashboard-section">
+    <h2>Resumen del pedido</h2>
+    <p>
+        <strong>Subtotal:</strong>
+
         Q <?= number_format(
             (float) $order->subtotal,
             2
         ) ?>
-    </strong>
-</p>
+    </p>
 
-<?php if (
-    (float)
-    $order->discount_total > 0
-): ?>
+    <!-- CUPÓN -->
+    <?php if (
+        (float) $order->discount_total > 0
+    ): ?>
+        <p>
+            <strong>Cupón:</strong>
 
-    <p>
-        Cupón:
-        <strong>
             <?= htmlspecialchars(
                 (string) (
                     $order->coupon_code
@@ -196,158 +251,119 @@ $warning = session('warning');
                 ENT_QUOTES,
                 'UTF-8'
             ) ?>
-        </strong>
-    </p>
+        </p>
 
-    <p>
-        Descuento:
-        <strong>
+        <p>
+            <strong>Descuento:</strong>
             - Q <?= number_format(
-                (float)
-                $order->discount_total,
+                (float) $order->discount_total,
                 2
             ) ?>
-        </strong>
+        </p>
+    <?php endif; ?>
 
-    </p>
+    <!-- ENVÍO -->
+    <?php if ($order->shipping_method_name): ?>
+        <p>
+            <strong> Método de envío:</strong>
 
-<?php endif; ?>
+            <?= htmlspecialchars(
+                (string) $order->shipping_method_name,
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
 
-<?php if (
-    $order->shipping_method_name
-): ?>
+        </p>
 
-    <p>
-        <strong>Método de envío:</strong>
+        <p>
+            <strong>Costo de envío:</strong>
+            Q <?= number_format(
+                (float) $order->shipping_total,
+                2
+            ) ?>
+        </p>
+    <?php endif; ?>
 
-        <?= htmlspecialchars(
-            (string)
-            $order->shipping_method_name,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
+    <hr>
 
-    </p>
-
-    <p>
-        <strong>Envío:</strong>
-
+    <h2>
+        Total:
         Q <?= number_format(
-            (float)
-            $order->shipping_total,
+            (float) $order->total,
             2
         ) ?>
-    </p>
-<?php endif; ?>
-<hr>
-<h3>Pago</h3>
+    </h2>
+</section>
 
-<p>
-    <strong> Método:</strong>
-    <?= htmlspecialchars(
-        (string) (
-            $order->payment_method_name
-            ?: 'No especificado'
-        ),
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>
-</p>
-
-<p>
-    <strong>Estado del pago:</strong>
-    <?php if (
-        $order->payment_status
-        === 'paid'
-    ): ?>
-        Pagado
-    <?php else: ?>
-        Pendiente de pago
-    <?php endif; ?>
-</p>
-
-<?php if ($order->paid_at): ?>
+<!-- =====================================================
+     INFORMACIÓN DE PAGO
+===================================================== -->
+<section class="dashboard-section">
+    <h2>Pago</h2>
     <p>
-        <strong>Fecha de pago:</strong>
+        <strong>Método:</strong>
 
         <?= htmlspecialchars(
-            (string) $order->paid_at,
+            (string) (
+                $order->payment_method_name
+                ?: 'No especificado'
+            ),
             ENT_QUOTES,
             'UTF-8'
         ) ?>
     </p>
-<?php endif; ?>
 
-<form
-    method="POST"
-    action="<?= htmlspecialchars(
-        url('pedidos/pago'),
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>"
->
+    <p>
+        <strong>Estado del pago:</strong>
 
-    <?= csrf_field() ?>
+        <?php if (
+            $order->payment_status
+            === 'paid'
+        ): ?>
+            <span>Pagado</span>
 
-    <input
-        type="hidden"
-        name="order_id"
-        value="<?= (int) $order->id ?>"
-    >
+        <?php else: ?>
+            <span>Pendiente de pago</span>
+        <?php endif; ?>
+    </p>
+
+    <?php if ($order->paid_at): ?>
+        <p>
+            <strong>Fecha de pago:</strong>
+
+            <?= htmlspecialchars(
+                (string) $order->paid_at,
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
+        </p>
+    <?php endif; ?>
+
+    <!-- =================================================
+         COMPROBANTE DE TRANSFERENCIA
+    ================================================== -->
 
     <?php if (
-        $order->payment_status
-        === 'paid'
+        $order->payment_method_code
+        === 'bank_transfer'
     ): ?>
-
-        <input
-            type="hidden"
-            name="payment_status"
-            value="pending"
+        <div
+            style="
+                margin-top:20px;
+                padding:20px;
+                border:1px solid #e5e7eb;
+                border-radius:10px;
+            "
         >
 
-        <button type="submit">Marcar pago como pendiente</button>
+            <h3>Comprobante de transferencia</h3>
 
-    <?php else: ?>
+            <?php if (
+                $order->payment_proof_path
+            ): ?>
 
-        <input
-            type="hidden"
-            name="payment_status"
-            value="paid"
-        >
-
-        <button type="submit">Marcar como pagado</button>
-
-    <?php endif; ?>
-</form>
-
-<?php if ($order->payment_method_code === 'bank_transfer'): ?>
-    <div
-        style="
-            margin-top:20px;
-            padding:20px;
-            border:1px solid #e5e7eb;
-            border-radius:10px;
-        "
-    >
-        <h3>Comprobante de transferencia</h3>
-
-        <?php if ($order->payment_proof_path): ?>
-
-            <a
-                href="<?= htmlspecialchars(
-                    asset(
-                        (string)
-                        $order->payment_proof_path
-                    ),
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <img
-                    src="<?= htmlspecialchars(
+                <a
+                    href="<?= htmlspecialchars(
                         asset(
                             (string)
                             $order->payment_proof_path
@@ -355,282 +371,396 @@ $warning = session('warning');
                         ENT_QUOTES,
                         'UTF-8'
                     ) ?>"
-                    alt="Comprobante de transferencia"
-                    style="
-                        display:block;
-                        width:100%;
-                        max-width:500px;
-                        max-height:500px;
-                        object-fit:contain;
-                        margin-top:15px;
-                        border-radius:8px;
-                        border:1px solid #ddd;
-                    "
+                    target="_blank"
+                    rel="noopener noreferrer"
                 >
-            </a>
 
-            <?php if ($order->payment_proof_uploaded_at): ?>
-                <p>
-                    <small>
-                        Comprobante recibido:
-
-                        <?= htmlspecialchars(
-                            (string)
-                            $order->payment_proof_uploaded_at,
+                    <img
+                        src="<?= htmlspecialchars(
+                            asset(
+                                (string)
+                                $order->payment_proof_path
+                            ),
                             ENT_QUOTES,
                             'UTF-8'
-                        ) ?>
-                    </small>
-                </p>
+                        ) ?>"
+                        alt="Comprobante de transferencia"
+
+                        style="
+                            display:block;
+                            width:100%;
+                            max-width:500px;
+                            max-height:500px;
+                            object-fit:contain;
+                            margin-top:15px;
+                            border-radius:8px;
+                            border:1px solid #ddd;
+                        "
+                    >
+
+                </a>
+
+                <?php if ($order->payment_proof_uploaded_at): ?>
+                    <p>
+                        <small>
+                            Comprobante recibido:
+
+                            <?= htmlspecialchars(
+                                (string)
+                                $order->payment_proof_uploaded_at,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+
+                        </small>
+                    </p>
+                <?php endif; ?>
+
+            <?php else: ?>
+                <div class="alert alert-warning">
+                    Este pedido no tiene
+                    comprobante de transferencia.
+                </div>
             <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
-        <?php else: ?>
-            <div class="alert alert-warning">
-                Este pedido no tiene comprobante.
-            </div>
-        <?php endif; ?>
-    </div>
-<?php endif; ?>
+    <!-- =================================================
+         CAMBIAR ESTADO DEL PAGO
+    ================================================== -->
 
-<h2>
-    Total:
-    Q <?= number_format(
-        (float) $order->total,
-        2
-    ) ?>
-</h2>
+    <?php if ($order->payment_status === 'paid'): ?>
 
+        <form
+            method="POST"
+            action="<?= htmlspecialchars(
+                url('pedidos/pago'),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
+            style="margin-top:20px;"
+        >
 
-<hr>
-<h2>Estado del pedido</h2>
+            <?= csrf_field() ?>
 
-<p>
-    Estado actual:
+            <input
+                type="hidden"
+                name="order_id"
+                value="<?= (int) $order->id ?>"
+            >
 
-    <strong>
+            <input
+                type="hidden"
+                name="payment_status"
+                value="pending"
+            >
+
+            <button type="submit">Marcar pago como pendiente</button>
+        </form>
+
+    <?php elseif ($order->status !== 'cancelled'): ?>
+
+        <form
+            method="POST"
+            action="<?= htmlspecialchars(
+                url('pedidos/pago'),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
+            style="margin-top:20px;"
+        >
+            <?= csrf_field() ?>
+
+            <input
+                type="hidden"
+                name="order_id"
+                value="<?= (int) $order->id ?>"
+            >
+
+            <input
+                type="hidden"
+                name="payment_status"
+                value="paid"
+            >
+
+            <button
+                type="submit"
+                onclick="return confirm(
+                    '¿Confirmas que este pedido ya fue pagado?'
+                );"
+            >
+                Marcar como pagado
+            </button>
+        </form>
+    <?php endif; ?>
+</section>
+
+<!-- =====================================================
+     ESTADO DEL PEDIDO
+===================================================== -->
+
+<section class="dashboard-section">
+    <h2>Estado del pedido</h2>
+
+    <p>
+        <strong>Estado actual:</strong>
+
         <?= htmlspecialchars(
             $order->statusLabel(),
             ENT_QUOTES,
             'UTF-8'
         ) ?>
-    </strong>
-</p>
+    </p>
 
+    <!-- =================================================
+         CAMBIOS MANUALES
+    ================================================== -->
+    <?php if (!empty($manualTransitions)): ?>
 
-<?php $transitions = $order->allowedTransitions();?>
-
-<?php if (!empty($transitions)): ?>
-
-    <form
-        method="POST"
-        action="<?= htmlspecialchars(
-            url('pedidos/estado'),
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>"
-    >
-        <?= csrf_field() ?>
-
-        <input
-            type="hidden"
-            name="id"
-            value="<?= (int) $order->id ?>"
+        <form
+            method="POST"
+            action="<?= htmlspecialchars(
+                url('pedidos/estado'),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
         >
+            <?= csrf_field() ?>
 
-        <label for="status">Nuevo estado</label>
+            <input
+                type="hidden"
+                name="id"
+                value="<?= (int) $order->id ?>"
+            >
 
-        <select
-            id="status"
-            name="status"
-            required
-        >
-            <option value="">Seleccionar</option>
-            <?php foreach ($transitions as $status): ?>
+            <div>
+                <label for="status">Nuevo estado</label>
 
-                <option
-                    value="<?= htmlspecialchars(
-                        $status,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>"
+                <select
+                    id="status"
+                    name="status"
+                    required
                 >
-                    <?php
-                    echo match ($status) {
-                        'confirmed' => 'Confirmado',
-                        'shipped' => 'Enviado',
-                        'delivered' => 'Entregado',
-                        'cancelled' => 'Cancelado',
-                        default => $status,
-                    };
-                    ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                    <option value="">Seleccionar</option>
 
-        <button
-            type="submit"
-            onclick="return confirm(
-                '¿Confirmas el cambio de estado?'
-            );"
-        >
-            Actualizar estado
-        </button>
+                    <?php foreach ($manualTransitions as $status): ?>
 
-    </form>
+                        <option
+                            value="<?= htmlspecialchars(
+                                $status,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                        >
+                            <?= htmlspecialchars(
+                                $statusLabels[
+                                    $status
+                                ] ?? $status,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <button
+                type="submit"
+                onclick="return confirm(
+                    '¿Confirmas el cambio de estado?'
+                );"
+            >
+                Actualizar estado
+            </button>
+        </form>
+
+    <?php elseif ($order->status !== 'confirmed'): ?>
+
+        <p>
+            Este pedido ya no admite
+            cambios manuales de estado.
+        </p>
+    <?php endif; ?>
+</section>
+
+<!-- =====================================================
+     DESPACHAR PEDIDO
+===================================================== -->
 
 <?php if ($order->status === 'confirmed'): ?>
 
-<section class="dashboard-section">
-    <h2> Despachar pedido</h2>
+    <section class="dashboard-section">
+        <h2>Despachar pedido</h2>
 
-    <p>
-        Registra los datos de la empresa
-        transportista y la guía antes de
-        marcar el pedido como enviado.
-    </p>
+        <p>
+            Registra la empresa transportista,
+            el número de guía y la imagen de la
+            guía antes de marcar el pedido como
+            enviado.
+        </p>
 
-    <form
-        method="POST"
-        enctype="multipart/form-data"
-        action="<?= htmlspecialchars(
-            url('pedidos/despachar'),
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>"
-    >
-        <?= csrf_field() ?>
-
-        <input
-            type="hidden"
-            name="order_id"
-            value="<?= (int) $order->id ?>"
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            action="<?= htmlspecialchars(
+                url('pedidos/despachar'),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
         >
-
-        <div>
-            <label for="shipping_carrier"> Empresa transportista</label>
+            <?= csrf_field() ?>
 
             <input
-                id="shipping_carrier"
-                type="text"
-                name="shipping_carrier"
-                maxlength="100"
-                placeholder="Ej. Cargo Expreso"
-                required
+                type="hidden"
+                name="order_id"
+                value="<?= (int) $order->id ?>"
             >
-        </div>
 
-        <div>
-            <label for="tracking_number">Número de guía</label>
+            <!-- TRANSPORTISTA -->
+            <div>
+                <label for="shipping_carrier">Empresa transportista</label>
 
-            <input
-                id="tracking_number"
-                type="text"
-                name="tracking_number"
-                maxlength="150"
-                placeholder="Ej. 123456789"
-                required
+                <input
+                    id="shipping_carrier"
+                    type="text"
+                    name="shipping_carrier"
+                    maxlength="100"
+                    placeholder="Ej. Cargo Expreso"
+                    required
+                >
+            </div>
+
+            <!-- GUÍA -->
+            <div>
+                <label for="tracking_number">Número de guía</label>
+
+                <input
+                    id="tracking_number"
+                    type="text"
+                    name="tracking_number"
+                    maxlength="150"
+                    placeholder="Ej. 123456789"
+                    required
+                >
+            </div>
+
+            <!-- IMAGEN -->
+            <div>
+                <label for="shipping_guide">Imagen de la guía</label>
+
+                <input
+                    id="shipping_guide"
+                    type="file"
+                    name="shipping_guide"
+
+                    accept="
+                        .jpg,
+                        .jpeg,
+                        .png,
+                        .webp,
+                        image/jpeg,
+                        image/png,
+                        image/webp
+                    "
+                    required
+                >
+
+                <small>
+                    JPG, PNG o WEBP.
+                    Máximo 4 MB.
+                </small>
+            </div>
+
+            <button
+                type="submit"
+                onclick="return confirm(
+                    '¿Confirmas que deseas despachar este pedido?'
+                );"
             >
-        </div>
-
-        <div>
-            <label for="shipping_guide">Imagen de la guía</label>
-            <input
-                id="shipping_guide"
-                type="file"
-                name="shipping_guide"
-                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                required
-            >
-            <small>JPG, PNG o WEBP. Máximo 4 MB.</small>
-        </div>
-
-        <button type="submit">Despachar pedido</button>
-    </form>
-
-</section>
-
+                Despachar pedido
+            </button>
+        </form>
+    </section>
 <?php endif; ?>
+
+<!-- =====================================================
+     INFORMACIÓN DEL DESPACHO
+===================================================== -->
 
 <?php if (
     $order->shipping_carrier
     || $order->tracking_number
     || $order->shipping_guide_path
+    || $order->shipped_at
+    || $order->delivered_at
 ): ?>
+    <section class="dashboard-section">
+        <h2>Información del despacho</h2>
 
-<section class="dashboard-section">
-    <h2>Información del despacho</h2>
-    <p>
-        <strong>Transportista:</strong>
-
-        <?= htmlspecialchars(
-            (string) (
-                $order->shipping_carrier
-                ?: '-'
-            ),
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </p>
-
-    <p>
-        <strong>Número de guía:</strong>
-
-        <?= htmlspecialchars(
-            (string) (
-                $order->tracking_number
-                ?: '-'
-            ),
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </p>
-
-    <?php if ($order->shipped_at): ?>
+        <!-- TRANSPORTISTA -->
         <p>
-            <strong>Fecha de despacho:</strong>
+            <strong>Transportista:</strong>
 
             <?= htmlspecialchars(
-                (string)
-                $order->shipped_at,
+                (string) (
+                    $order->shipping_carrier
+                    ?: '-'
+                ),
                 ENT_QUOTES,
                 'UTF-8'
             ) ?>
         </p>
-    <?php endif; ?>
 
-    <?php if ($order->delivered_at): ?>
+        <!-- NÚMERO DE GUÍA -->
         <p>
-            <strong>Fecha de entrega:</strong>
+            <strong>Número de guía:</strong>
 
             <?= htmlspecialchars(
-                (string)
-                $order->delivered_at,
+                (string) (
+                    $order->tracking_number
+                    ?: '-'
+                ),
                 ENT_QUOTES,
                 'UTF-8'
             ) ?>
         </p>
-    <?php endif; ?>
 
-    <?php if ($order->shipping_guide_path): ?>
+        <!-- FECHA DESPACHO -->
+        <?php if ($order->shipped_at): ?>
 
-        <div style="margin-top:20px;">
-            <h3>Guía de envío</h3>
+            <p>
+                <strong>Fecha de despacho:</strong>
 
-            <a
-                href="<?= htmlspecialchars(
-                    asset(
-                        (string)
-                        $order->shipping_guide_path
-                    ),
+                <?= htmlspecialchars(
+                    (string) $order->shipped_at,
                     ENT_QUOTES,
                     'UTF-8'
-                ) ?>"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
+                ) ?>
+            </p>
+        <?php endif; ?>
 
-                <img
-                    src="<?= htmlspecialchars(
+        <!-- FECHA ENTREGA -->
+
+        <?php if ($order->delivered_at): ?>
+
+            <p>
+                <strong>Fecha de entrega:</strong>
+                <?= htmlspecialchars(
+                    (string) $order->delivered_at,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </p>
+        <?php endif; ?>
+
+        <!-- IMAGEN DE GUÍA -->
+        <?php if ($order->shipping_guide_path): ?>
+
+            <div style="margin-top:20px;">
+                <h3>Guía de envío</h3>
+
+                <a
+                    href="<?= htmlspecialchars(
                         asset(
                             (string)
                             $order->shipping_guide_path
@@ -638,25 +768,33 @@ $warning = session('warning');
                         ENT_QUOTES,
                         'UTF-8'
                     ) ?>"
-                    alt="Guía de envío"
-
-                    style="
-                        display:block;
-                        width:100%;
-                        max-width:500px;
-                        max-height:500px;
-                        object-fit:contain;
-                        border:1px solid #ddd;
-                        border-radius:8px;
-                    "
+                    target="_blank"
+                    rel="noopener noreferrer"
                 >
-            </a>
-        </div>
-    <?php endif; ?>
 
-</section>
-<?php endif; ?>
+                    <img
+                        src="<?= htmlspecialchars(
+                            asset(
+                                (string)
+                                $order->shipping_guide_path
+                            ),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                        alt="Guía de envío"
 
-<?php else: ?>
-    <p>Este pedido ya no admite cambios de estado.</p>
+                        style="
+                            display:block;
+                            width:100%;
+                            max-width:500px;
+                            max-height:500px;
+                            object-fit:contain;
+                            border:1px solid #ddd;
+                            border-radius:8px;
+                        "
+                    >
+                </a>
+            </div>
+        <?php endif; ?>
+    </section>
 <?php endif; ?>
