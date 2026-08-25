@@ -303,4 +303,37 @@ class Order extends Model{
             $page
         );
     }
+
+    public static function findForTracking(
+        string $number,
+        string $phone
+    ): ?static {
+        $number =
+            strtoupper(
+                trim($number)
+            );
+
+        $phone = trim($phone);
+        $instance = new static();
+        $row =
+            Database::first(
+                "SELECT *
+                FROM `orders`
+
+                WHERE `number` = ?
+                AND `customer_phone` = ?
+
+                LIMIT 1",
+                [
+                    $number,
+                    $phone,
+                ]
+            );
+
+        if (!$row) {
+            return null;
+        }
+
+        return $instance->newFromDatabase($row);
+    }
 }
