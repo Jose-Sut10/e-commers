@@ -16,6 +16,7 @@ use App\Controllers\PromotionController;
 use App\Controllers\CouponController;
 use App\Controllers\ShippingMethodController;
 use App\Controllers\PaymentMethodController;
+use App\Controllers\TrackingController;
 
 $router->get('/', [
     HomeController::class,
@@ -392,4 +393,15 @@ $router->post('/pedidos/pago', [
 $router->post('/pedidos/despachar', [
     OrderController::class,
     'dispatchOrder'
+]);
+
+//seguimiento público
+$router->get('/seguimiento', [
+    TrackingController::class,
+    'index'
+]);
+
+$router->post('/seguimiento', [
+    TrackingController::class,
+    'search'
 ]);

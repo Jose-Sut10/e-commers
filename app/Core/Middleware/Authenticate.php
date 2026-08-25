@@ -20,6 +20,7 @@ class Authenticate implements Middleware{
         '/cupones',
         '/envios',
         '/metodos-pago',
+        '/seguimiento',
     ];
 
     public function handle(Request $request): void{
