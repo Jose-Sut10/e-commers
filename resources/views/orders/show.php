@@ -77,7 +77,6 @@ $warning = session('warning');
 
 <p>
     <strong>Dirección:</strong>
-
     <?= nl2br(
         htmlspecialchars(
             (string) $order->customer_address,
@@ -88,7 +87,6 @@ $warning = session('warning');
 </p>
 
 <?php if ($order->notes): ?>
-
     <p><strong>Notas:</strong>
 
         <?= nl2br(
@@ -99,7 +97,6 @@ $warning = session('warning');
             )
         ) ?>
     </p>
-
 <?php endif; ?>
 
 <hr>
@@ -405,7 +402,6 @@ $warning = session('warning');
 
 
 <hr>
-
 <h2>Estado del pedido</h2>
 
 <p>
@@ -481,6 +477,185 @@ $warning = session('warning');
         </button>
 
     </form>
+
+<?php if ($order->status === 'confirmed'): ?>
+
+<section class="dashboard-section">
+    <h2> Despachar pedido</h2>
+
+    <p>
+        Registra los datos de la empresa
+        transportista y la guía antes de
+        marcar el pedido como enviado.
+    </p>
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        action="<?= htmlspecialchars(
+            url('pedidos/despachar'),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+    >
+        <?= csrf_field() ?>
+
+        <input
+            type="hidden"
+            name="order_id"
+            value="<?= (int) $order->id ?>"
+        >
+
+        <div>
+            <label for="shipping_carrier"> Empresa transportista</label>
+
+            <input
+                id="shipping_carrier"
+                type="text"
+                name="shipping_carrier"
+                maxlength="100"
+                placeholder="Ej. Cargo Expreso"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="tracking_number">Número de guía</label>
+
+            <input
+                id="tracking_number"
+                type="text"
+                name="tracking_number"
+                maxlength="150"
+                placeholder="Ej. 123456789"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="shipping_guide">Imagen de la guía</label>
+            <input
+                id="shipping_guide"
+                type="file"
+                name="shipping_guide"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                required
+            >
+            <small>JPG, PNG o WEBP. Máximo 4 MB.</small>
+        </div>
+
+        <button type="submit">Despachar pedido</button>
+    </form>
+
+</section>
+
+<?php endif; ?>
+
+<?php if (
+    $order->shipping_carrier
+    || $order->tracking_number
+    || $order->shipping_guide_path
+): ?>
+
+<section class="dashboard-section">
+    <h2>Información del despacho</h2>
+    <p>
+        <strong>Transportista:</strong>
+
+        <?= htmlspecialchars(
+            (string) (
+                $order->shipping_carrier
+                ?: '-'
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </p>
+
+    <p>
+        <strong>Número de guía:</strong>
+
+        <?= htmlspecialchars(
+            (string) (
+                $order->tracking_number
+                ?: '-'
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </p>
+
+    <?php if ($order->shipped_at): ?>
+        <p>
+            <strong>Fecha de despacho:</strong>
+
+            <?= htmlspecialchars(
+                (string)
+                $order->shipped_at,
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
+        </p>
+    <?php endif; ?>
+
+    <?php if ($order->delivered_at): ?>
+        <p>
+            <strong>Fecha de entrega:</strong>
+
+            <?= htmlspecialchars(
+                (string)
+                $order->delivered_at,
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
+        </p>
+    <?php endif; ?>
+
+    <?php if ($order->shipping_guide_path): ?>
+
+        <div style="margin-top:20px;">
+            <h3>Guía de envío</h3>
+
+            <a
+                href="<?= htmlspecialchars(
+                    asset(
+                        (string)
+                        $order->shipping_guide_path
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+
+                <img
+                    src="<?= htmlspecialchars(
+                        asset(
+                            (string)
+                            $order->shipping_guide_path
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"
+                    alt="Guía de envío"
+
+                    style="
+                        display:block;
+                        width:100%;
+                        max-width:500px;
+                        max-height:500px;
+                        object-fit:contain;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                    "
+                >
+            </a>
+        </div>
+    <?php endif; ?>
+
+</section>
+<?php endif; ?>
 
 <?php else: ?>
     <p>Este pedido ya no admite cambios de estado.</p>

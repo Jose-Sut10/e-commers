@@ -476,6 +476,15 @@ class OrderService{
                 );
             }
 
+            /* El estado "shipped" solamente puede establecerse mediante el proceso
+            * de despacho, porque requiere transportista, guía e imagen.*/
+
+            if ($newStatus === 'shipped') {
+                throw new RuntimeException(
+                    'Para marcar un pedido como enviado debes utilizar la opción "Despachar pedido".'
+                );
+            }
+
             /*
              * Validar transición.
              */
@@ -566,6 +575,13 @@ class OrderService{
              * Actualizar estado.
              */
             $order->status = $newStatus;
+
+            if ($newStatus === 'delivered') {
+                $order->delivered_at =
+                    date(
+                        'Y-m-d H:i:s'
+                    );
+            }
 
             if (!$order->save()) {
                 throw new RuntimeException(

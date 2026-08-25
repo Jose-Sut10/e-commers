@@ -387,3 +387,9 @@ $router->post('/pedidos/pago', [
     OrderController::class,
     'updatePaymentStatus'
 ]);
+
+//gestión pedidos
+$router->post('/pedidos/despachar', [
+    OrderController::class,
+    'dispatchOrder'
+]);

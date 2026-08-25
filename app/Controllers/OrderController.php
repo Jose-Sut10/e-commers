@@ -1,12 +1,14 @@
 <?php
 namespace App\Controllers;
 use Throwable;
+use RuntimeException;
 use Core\Controller;
 use Core\Request;
 use Core\Session;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\OrderService;
+use App\Services\OrderShipmentService;
 
 class OrderController extends Controller{
     public function index(): void{
@@ -253,6 +255,67 @@ class OrderController extends Controller{
             Session::flash(
                 'warning',
                 'No fue posible actualizar el pago.'
+            );
+        }
+
+        redirect(
+            'pedidos/ver?id='
+            . (int) $orderId
+        );
+    }
+
+    //gestión de envío
+    public function dispatchOrder(): void{
+        $request = new Request();
+        $input = $request->all();
+
+        $orderId =
+            filter_var(
+                $input['order_id']
+                ?? null,
+                FILTER_VALIDATE_INT,
+                [
+                    'options' => ['min_range' => 1,],
+                ]
+            );
+
+        if (!$orderId) {
+            Session::flash(
+                'warning',
+                'El pedido indicado no es válido.'
+            );
+            redirect('pedidos');
+        }
+
+        $guideFile =
+            $_FILES['shipping_guide']
+            ?? null;
+
+        try {
+            (new OrderShipmentService())->dispatch(
+                (int) $orderId,
+                $input,
+                $guideFile
+            );
+
+            Session::flash(
+                'success',
+                'El pedido fue despachado correctamente.'
+            );
+
+        } catch (RuntimeException $exception) {
+            Session::flash(
+                'warning',
+                $exception->getMessage()
+            );
+
+        } catch (Throwable $exception) {
+
+            error_log($exception->getMessage());
+
+            Session::flash(
+                'warning',
+                'No fue posible despachar el pedido.'
             );
         }
 
