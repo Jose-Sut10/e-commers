@@ -11,7 +11,22 @@
         ) ?>
     </h2>
 
-    <p>Guarda este número como referencia.</p>
+    <p>
+        Guarda tu número de pedido.
+        Lo necesitarás junto con tu teléfono
+        para consultar el estado de tu compra.
+
+    </p>
+
+    <a
+        href="<?= htmlspecialchars(
+            url('seguimiento'),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+    >
+        Consultar seguimiento
+    </a>
 
     <a href="<?= htmlspecialchars(
         url('tienda'),

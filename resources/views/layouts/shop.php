@@ -148,6 +148,15 @@ try {
                 Tienda
             </a>
 
+            <a
+                href="<?= htmlspecialchars(
+                    url('seguimiento'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>"
+            >
+                Seguimiento
+            </a>
 
             <a
                 href="<?= htmlspecialchars(
