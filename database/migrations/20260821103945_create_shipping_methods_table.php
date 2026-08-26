@@ -10,11 +10,7 @@ return new class extends Migration{
             function (Blueprint $table): void {
 
                 $table->id();
-
-                $table->string(
-                    'name',
-                    100
-                );
+                $table->string('name',100);
 
                 $table
                     ->text('description')
