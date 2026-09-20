@@ -17,6 +17,7 @@ use App\Controllers\CouponController;
 use App\Controllers\ShippingMethodController;
 use App\Controllers\PaymentMethodController;
 use App\Controllers\TrackingController;
+use App\Controllers\StoreSettingController;
 
 $router->get('/', [
     HomeController::class,
@@ -404,4 +405,16 @@ $router->get('/seguimiento', [
 $router->post('/seguimiento', [
     TrackingController::class,
     'search'
+]);
+
+/*configuración de la tienda*/
+$router->get('/configuracion', [
+    StoreSettingController::class,
+    'index'
+]);
+
+
+$router->post('/configuracion', [
+    StoreSettingController::class,
+    'update'
 ]);

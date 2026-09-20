@@ -32,6 +32,16 @@ return [
         'icon' => '%',
     ],
     [
+    'label' => 'Clientes',
+    'route' => '/clientes',
+    'icon' => '♙',
+    ],
+    [
+        'label' => 'Pedidos',
+        'route' => '/pedidos',
+        'icon' => '☷',
+    ],
+        [
     'label' => 'Envíos',
     'route' => '/envios',
     'icon' => '↗',
@@ -41,15 +51,9 @@ return [
     'route' => '/metodos-pago',
     'icon' => '$',
     ],
-    
     [
-    'label' => 'Clientes',
-    'route' => '/clientes',
-    'icon' => '♙',
-    ],
-    [
-        'label' => 'Pedidos',
-        'route' => '/pedidos',
-        'icon' => '☷',
+    'label' => 'Configuración',
+    'route' => '/configuracion',
+    'icon' => '⚙',
     ],
 ];

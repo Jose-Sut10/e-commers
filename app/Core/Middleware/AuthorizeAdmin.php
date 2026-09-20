@@ -14,6 +14,7 @@ class AuthorizeAdmin implements Middleware{
         '/cupones',
         '/envios',
         '/metodos-pago',
+        '/configuracion',
     ];
 
     public function handle(Request $request): void{
