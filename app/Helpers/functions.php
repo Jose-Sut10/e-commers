@@ -183,4 +183,50 @@ if (!function_exists('route_active')) {
                 rtrim($route, '/') . '/'
             );
     }
+
+    /*conexión de settings con la tienda*/
+
+    if (!function_exists('store_settings')) {
+
+        function store_settings(): \App\Models\StoreSetting{
+            static $settings = null;
+
+            if ($settings === null) {
+                $settings =
+                    \App\Models\StoreSetting::current();
+            }
+            return $settings;
+        }
+    }
+
+
+    /*FORMATO DE MONEDA*/
+
+    if (!function_exists('money')) {
+
+        function money(
+            float|int|string $amount
+        ): string {
+
+            $settings =store_settings();
+            $symbol =
+                trim(
+                    (string) (
+                        $settings->currency_symbol
+                        ?? 'Q'
+                    )
+                );
+
+            if ($symbol === '') {
+                $symbol = 'Q';
+            }
+
+            return $symbol
+                . ' '
+                . number_format(
+                    (float) $amount,
+                    2
+                );
+        }
+    }
 }
