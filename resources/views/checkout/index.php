@@ -423,6 +423,71 @@
                     <?php endforeach; ?>
                 </select>
 
+                <!--DATOS BANCARIOS-->
+
+                <div
+                    id="bank-transfer-details"
+                    class="bank-transfer-details"
+                >
+
+                    <h3>Datos para transferencia</h3>
+
+                    <?php if ($storeSettings->bank_name): ?>
+
+                        <p>
+                            <strong>Banco:</strong>
+                            <?= htmlspecialchars(
+                                (string)
+                                $storeSettings->bank_name,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php if ($storeSettings->bank_account_name): ?>
+
+                        <p>
+                            <strong>Nombre:</strong>
+                            <?= htmlspecialchars(
+                                (string)
+                                $storeSettings->bank_account_name,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
+
+                    <?php endif; ?>
+
+                    <?php if ($storeSettings->bank_account_number): ?>
+
+                        <p>
+                            <strong>Número de cuenta:</strong>
+                            <?= htmlspecialchars(
+                                (string)
+                                $storeSettings->bank_account_number,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
+                    <?php endif; ?>
+
+
+                    <?php if ($storeSettings->bank_account_type): ?>
+
+                        <p>
+                            <strong>Tipo de cuenta:</strong>
+
+                            <?= htmlspecialchars(
+                                (string)
+                                $storeSettings->bank_account_type,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+                
                 <!-- COMPROBANTE DE TRANSFERENCIA -->
 
                 <div

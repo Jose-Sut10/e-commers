@@ -8,6 +8,7 @@ use Core\Session;
 use App\Models\Company;
 use App\Models\ShippingMethod;
 use App\Models\PaymentMethod;
+use App\Models\StoreSetting;
 use App\Services\CartService;
 use App\Services\OrderService;
 use App\Services\CouponService;
@@ -94,6 +95,7 @@ class CheckoutController extends Controller{
                 'couponResult' => $couponResult,
                 'shippingMethods' => $shippingMethods,
                 'paymentMethods' => $paymentMethods,
+                'storeSettings' => StoreSetting::current(),
             ],
             'shop'
         );
