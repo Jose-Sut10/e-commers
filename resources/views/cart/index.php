@@ -199,11 +199,7 @@ $warning = session('warning');
     </table>
 
     <h2>
-        Subtotal:
-        Q <?= number_format(
-            (float) $subtotal,
-            2
-        ) ?>
+        <?= money($product->price) ?>
     </h2>
 
     <p>

@@ -109,7 +109,12 @@ $whatsapp =
     <link
         rel="stylesheet"
         href="<?= htmlspecialchars(
-            asset('assets/css/app.css'),
+            asset('assets/css/app.css')
+            . '?v='
+            . filemtime(
+                BASE_PATH
+                . '/public/assets/css/app.css'
+            ),
             ENT_QUOTES,
             'UTF-8'
         ) ?>"
@@ -121,42 +126,52 @@ $whatsapp =
 
 <header class="shop-header">
     <div class="shop-header-container">
-        <a
-            href="<?= htmlspecialchars(
-                url('tienda'),
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>"
-            class="shop-brand"
-        >
-            <?php if (
-                $settings->logo_path
-            ): ?>
+    <a
+        href="<?= htmlspecialchars(
+            url('tienda'),
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+        class="shop-brand"
+        style="
+            display:flex;
+            align-items:center;
+            width:220px;
+            height:80px;
+            overflow:hidden;
+            flex-shrink:0;
+        "
+    >
 
-                <img
-                    src="<?= htmlspecialchars(
-                        asset(
-                            (string)
-                            $settings->logo_path
-                        ),
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>"
-                    alt="<?= htmlspecialchars(
-                        $businessName,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>"
-                    class="shop-logo"
-                >
-            <?php else: ?>
-                <?= htmlspecialchars(
+        <?php if ($settings->logo_path): ?>
+
+            <img
+                src="<?= htmlspecialchars(
+                    asset(
+                        (string) $settings->logo_path
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>"
+                alt="<?= htmlspecialchars(
                     $businessName,
                     ENT_QUOTES,
                     'UTF-8'
-                ) ?>
-            <?php endif; ?>
-        </a>
+                ) ?>"
+                class="shop-logo"
+            >
+
+        <?php else: ?>
+
+            <?= htmlspecialchars(
+                $businessName,
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>
+
+        <?php endif; ?>
+
+    </a>
 
         <nav class="shop-navigation">
             <a

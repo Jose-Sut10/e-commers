@@ -135,12 +135,7 @@
                     <?php if ($product->hasActiveSale()): ?>
                         <div class="product-price">
 
-                            <del>
-                                Q <?= number_format(
-                                    (float) $product->price,
-                                    2
-                                ) ?>
-                            </del>
+                            <del><?= money($product->price) ?></del>
 
                             <strong class="sale-price">
                                 Q <?= number_format(

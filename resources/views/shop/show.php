@@ -42,18 +42,10 @@ $availableStock = $hasVariants
 <?php if ($product->hasActiveSale()): ?>
     <div class="product-detail-price">
         <del>
-            Q <?= number_format(
-                (float) $product->price,
-                2
-            ) ?>
+            <?= money($product->price) ?>
         </del>
 
-        <h2>
-            Q <?= number_format(
-                $product->finalPrice(),
-                2
-            ) ?>
-        </h2>
+        <h2><?= money($couponResult['subtotal']) ?></h2>
 
         <span class="sale-badge">
             <?= $product->discountPercentage() ?>%

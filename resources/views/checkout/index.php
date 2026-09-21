@@ -45,17 +45,11 @@
                 </td>
 
                 <td>
-                    Q <?= number_format(
-                        (float) $product->price,
-                        2
-                    ) ?>
+                    <?= money($product->price) ?>
                 </td>
 
                 <td>
-                    Q <?= number_format(
-                        (float) $item['subtotal'],
-                        2
-                    ) ?>
+                    <?= money($couponResult['subtotal']) ?>
                 </td>
             </tr>
 
@@ -66,10 +60,7 @@
 
 <h2>
     Total:
-    Q <?= number_format(
-        (float) $subtotal,
-        2
-    ) ?>
+    <?= money($couponResult['subtotal']) ?>
 </h2>
 
 <section class="dashboard-section">
@@ -95,33 +86,20 @@
 
         <p>
             Subtotal:
-
-            Q <?= number_format(
-                (float)
-                $couponResult['subtotal'],
-                2
-            ) ?>
+            <?= money($couponResult['total']) ?>
         </p>
 
         <p>
             Descuento:
 
             <strong>
-                - Q <?= number_format(
-                    (float)
-                    $couponResult['discount'],
-                    2
-                ) ?>
+                - <?= money($couponResult['discount']) ?>
             </strong>
         </p>
 
         <h2>
             Total:
-            Q <?= number_format(
-                (float)
-                $couponResult['total'],
-                2
-            ) ?>
+            - <?= money($couponResult['discount']) ?>
         </h2>
 
         <form
@@ -584,11 +562,7 @@
     <p>
         Subtotal:
         <strong>
-            Q <?= number_format(
-                (float)
-                $couponResult['subtotal'],
-                2
-            ) ?>
+            <?= money($couponResult['subtotal']) ?>
         </strong>
     </p>
 
@@ -638,29 +612,25 @@
 </form>
 
 <script>
+    window.storeCurrencySymbol =
+        <?= json_encode(
+            (string) (
+                $storeSettings->currency_symbol
+                ?: 'Q'
+            ),
+            JSON_UNESCAPED_UNICODE
+            | JSON_UNESCAPED_SLASHES
+        ) ?>;
+</script>
+
+<script>
 document.addEventListener(
     'DOMContentLoaded',
     function () {
-
-        const select =
-            document.getElementById(
-                'shipping_method_id'
-            );
-
-        const box =
-            document.querySelector(
-                '.checkout-total-box'
-            );
-
-        const shippingElement =
-            document.getElementById(
-                'checkout-shipping'
-            );
-
-        const totalElement =
-            document.getElementById(
-                'checkout-total'
-            );
+        const select = document.getElementById('shipping_method_id');
+        const box = document.querySelector('.checkout-total-box');
+        const shippingElement = document.getElementById('checkout-shipping');
+        const totalElement = document.getElementById('checkout-total');
 
 
         if (
@@ -698,13 +668,10 @@ document.addEventListener(
             const total = baseTotal + shipping;
 
 
-            shippingElement.textContent = 'Q ' + shipping.toFixed(2);
-            totalElement.textContent = 'Q '
-                + total.toFixed(2);
-        }
+            shippingElement.textContent = window.storeCurrencySymbol + ' ' + shipping.toFixed(2)
+            totalElement.textContent = window.storeCurrencySymbol + ' ' + total.toFixed(2);}
 
-        select.addEventListener('change',updateTotal);
-        updateTotal();
+        select.addEventListener('change',updateTotal); updateTotal();
     }
 );
 </script>
@@ -721,6 +688,7 @@ document.addEventListener(
         const instructionsBox = document.getElementById('payment-method-instructions');
         const proofSection = document.getElementById('payment-proof-section');
         const proofInput = document.getElementById('payment_proof');
+        const bankDetails = document.getElementById('bank-transfer-details');
 
         if (!paymentSelect) {
             return;
@@ -758,6 +726,17 @@ document.addEventListener(
             /*COMPROBANTE*/
 
             const paymentType = option.dataset.type || '';
+
+            /* DATOS BANCARIOS*/
+
+            if (bankDetails) {
+                if (paymentType === 'bank_transfer') {
+                    bankDetails.classList.add('is-visible');
+                } else {
+                    bankDetails.classList.remove('is-visible');
+                }
+            }
+
             const requiresProof =
                 paymentType
                 === 'bank_transfer';
